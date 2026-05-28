@@ -902,7 +902,7 @@
         };
 
         // --- EDITOR VIEW (With Sidebar) ---
-        const EditorHome = ({ onBack }) => {
+        const EditorHome = ({ onBack, onPublish }) => {
             const [isSidebarOpen, setIsSidebarOpen] = useState(true);
             const [activeFormats, setActiveFormats] = useState({
                 h1: false, h2: false, bold: false, italic: false, underline: false, blockquote: false, ul: false, ol: false
@@ -964,11 +964,11 @@
                     {/* Header Toolbar */}
                     <div className="flex justify-between items-center mb-6 shrink-0">
                         <button onClick={onBack} className="text-[#6B6B72] flex items-center gap-1 hover:text-white transition-colors">
-                            <Icon name="chevron_left" size={18} /> Save and exit
+                            <Icon name="chevron_left" size={18} /> Save as draft
                         </button>
                         <div className="flex items-center gap-4">
                             <span className="text-[#6B6B72] font-mono text-[11px] uppercase tracking-wider">Autosaved just now</span>
-                            <Button variant="primary" className="py-2 px-6">Publish</Button>
+                            <Button variant="primary" className="py-2 px-6" onClick={onPublish}>Publish</Button>
                         </div>
                     </div>
 
@@ -1574,6 +1574,7 @@
             const [notifStrategist, setNotifStrategist] = useState(defaultNotificationsStrategist);
             const [prefsForm, setPrefsForm] = useState(defaultPrefs);
             const [thresholdsForm, setThresholdsForm] = useState(defaultThresholds);
+            const [baselineThresholds, setBaselineThresholds] = useState(defaultThresholds);
 
             // Password Visibility States
             const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -1595,6 +1596,11 @@
                 setPasswordForm(defaultPassword);
             };
 
+            const handleSaveThresholds = () => {
+                setBaselineThresholds(thresholdsForm);
+                setShowToast(true);
+            };
+
             const handleDiscardAccount = () => {
                 setAccountForm(defaultAccount);
                 setPasswordForm(defaultPassword);
@@ -1607,6 +1613,10 @@
             
             const isAccountDirty = JSON.stringify(accountForm) !== JSON.stringify(defaultAccount) || 
                                   passwordForm.current !== '' || passwordForm.new !== '' || passwordForm.confirm !== '';
+
+            const isThresholdsDirty = JSON.stringify(thresholdsForm) !== JSON.stringify(baselineThresholds);
+
+            const handleDiscardThresholds = () => setThresholdsForm(baselineThresholds);
 
             // Left Nav Configuration
             const writerNav = [
@@ -1632,8 +1642,6 @@
                 { id: 'workspace', label: 'WORKSPACE', icon: 'domain', items: [
                     { id: 'teamspace', label: 'Teamspace' },
                     { id: 'plans', label: 'Plans', badge: 'GROWTH' },
-                    { id: 'billing', label: 'Billing' },
-                    { id: 'members', label: 'Members' },
                     { id: 'thresholds', label: 'Signal thresholds' }
                 ]}
             ];
@@ -1651,7 +1659,7 @@
                     }`}
                 >
                     <span className="font-sans text-[14px]">{item.label}</span>
-                    {item.badge && <span className={`font-mono text-[10px] uppercase rounded-[100px] px-[7px] py-[2px] ml-[8px] ${item.badge === 'FREE' ? 'bg-[#87F06426] text-[#87F064]' : 'bg-[#FC632B26] text-[#FC632B]'}`}>{item.badge}</span>}
+                    {item.badge && <span className={`font-mono text-[10px] uppercase rounded-[100px] px-[7px] py-[2px] ml-[8px] ${item.badge === 'FREE' ? 'bg-[#87F06426] text-[#87F064]' : item.badge === 'GROWTH' ? 'bg-[#4DCBFD26] text-[#4DCBFD]' : 'bg-[#FC632B26] text-[#FC632B]'}`}>{item.badge}</span>}
                 </button>
             );
 
@@ -2073,7 +2081,7 @@
                                     
                                     <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[16px] p-[24px] mb-[32px]">
                                         <div className="w-[40px] h-[40px] rounded-[10px] bg-[#242428] border border-[#2A2A2E] flex items-center justify-center mb-[16px]">
-                                            <Icon name="workspace_premium" size={20} className={role === 'writer' ? 'text-[#87F064]' : 'text-[#FC632B]'} />
+                                            <Icon name="workspace_premium" size={20} className={role === 'writer' ? 'text-[#87F064]' : 'text-[#4DCBFD]'} />
                                         </div>
                                         <div className="flex justify-between items-start gap-[24px]">
                                             <div>
@@ -2108,56 +2116,6 @@
                                 </div>
                             )}
 
-                            {/* BILLING (Strategist only) */}
-                            {activeSection === 'billing' && role === 'strategist' && (
-                                <div className="animate-in fade-in duration-300">
-                                    <SectionLabel text="BILLING" />
-                                    <div className="flex flex-col">
-                                        <div className="flex justify-between items-center py-[14px] border-b border-[#2A2A2E]">
-                                            <span className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.05em]">Billing cycle</span>
-                                            <span className="font-sans text-[14px] text-[#F2F2F3]">Monthly</span>
-                                        </div>
-                                        <div className="flex justify-between items-center py-[14px] border-b border-[#2A2A2E]">
-                                            <span className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.05em]">Next renewal</span>
-                                            <span className="font-sans text-[14px] text-[#F2F2F3]">Dec 1, 2024</span>
-                                        </div>
-                                        <div className="flex justify-between items-center py-[14px] border-b border-[#2A2A2E]">
-                                            <span className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.05em]">Payment method</span>
-                                            <span className="font-sans text-[14px] text-[#F2F2F3]">Visa ending in 4242</span>
-                                        </div>
-                                        <div className="flex justify-between items-center py-[14px]">
-                                            <span className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.05em]">Invoice email</span>
-                                            <span className="font-sans text-[14px] text-[#F2F2F3]">billing@company.com</span>
-                                        </div>
-                                    </div>
-                                    <p className="font-sans text-[13px] text-[#6B6B72] mt-[16px]">To update billing details, contact your admin.</p>
-                                </div>
-                            )}
-
-                            {/* MEMBERS (Strategist only) */}
-                            {activeSection === 'members' && role === 'strategist' && (
-                                <div className="animate-in fade-in duration-300">
-                                    <SectionLabel text="TEAM ACCESS" />
-                                    <div className="flex flex-col">
-                                        <div className="flex justify-between items-center py-[16px] border-b border-[#2A2A2E]">
-                                            <div className="flex items-center gap-[12px]">
-                                                <div className="w-[32px] h-[32px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center font-sans font-medium text-[13px] text-[#9B9BA4]">J</div>
-                                                <span className="font-sans font-medium text-[14px] text-[#F2F2F3]">Jamie D.</span>
-                                            </div>
-                                            <Icon name="more_horiz" size={20} className="text-[#6B6B72] hover:text-[#F2F2F3] cursor-pointer transition-colors duration-150" />
-                                        </div>
-                                        <div className="flex justify-between items-center py-[16px]">
-                                            <div className="flex items-center gap-[12px]">
-                                                <div className="w-[32px] h-[32px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center font-sans font-medium text-[13px] text-[#9B9BA4]">A</div>
-                                                <span className="font-sans font-medium text-[14px] text-[#F2F2F3]">Alex T.</span>
-                                            </div>
-                                            <Icon name="more_horiz" size={20} className="text-[#6B6B72] hover:text-[#F2F2F3] cursor-pointer transition-colors duration-150" />
-                                        </div>
-                                    </div>
-                                    <p className="font-sans text-[13px] text-[#6B6B72] mt-[16px]">To add or remove team members, contact your admin.</p>
-                                </div>
-                            )}
-
                             {/* SIGNAL THRESHOLDS (Strategist only) */}
                             {activeSection === 'thresholds' && role === 'strategist' && (
                                 <div className="animate-in fade-in duration-300">
@@ -2188,12 +2146,15 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex justify-end gap-[12px] mt-[32px] pt-[20px] border-t border-[#2A2A2E]">
-                                        <Button variant="ghost">Cancel</Button>
-                                        <Button variant="primary" onClick={handleSaveAccount}>Save changes</Button>
-                                    </div>
+                                    {isThresholdsDirty && (
+                                        <div className="flex justify-end gap-[12px] mt-[32px] pt-[20px] border-t border-[#2A2A2E]">
+                                            <Button variant="ghost" onClick={handleDiscardThresholds}>Cancel</Button>
+                                            <Button variant="primary" onClick={handleSaveThresholds}>Save</Button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
+
                         </div>
                     </div>
 
@@ -2251,16 +2212,9 @@
             const [selectedAction, setSelectedAction] = useState('refresh');
             const [isBriefSent, setIsBriefSent] = useState(false);
             const [showSignalToast, setShowSignalToast] = useState(false);
+            const [showPublishToast, setShowPublishToast] = useState(false);
             const [briefNote, setBriefNote] = useState("Update the existing guide to include a dedicated section on AI-driven sequence personalization. Focus on reclaiming the featured snippet from EmailFlow.io by addressing the 'AI Automation' gap identified in our analysis.");
             const relatedScrollRef = useRef(null);
-
-            const [assignee, setAssignee] = useState({ name: 'Jamie D.', seed: 'Jamie' });
-            const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
-            const WRITERS = [
-                { name: 'Jamie D.', seed: 'Jamie' },
-                { name: 'Alex T.', seed: 'Alex' },
-                { name: 'Sarah K.', seed: 'Felix' }
-            ];
 
             useEffect(() => {
                 let timer;
@@ -2271,6 +2225,16 @@
                 }
                 return () => clearTimeout(timer);
             }, [showSignalToast]);
+
+            useEffect(() => {
+                let timer;
+                if (showPublishToast) {
+                    timer = setTimeout(() => {
+                        setShowPublishToast(false);
+                    }, 2000);
+                }
+                return () => clearTimeout(timer);
+            }, [showPublishToast]);
 
             const getActiveTab = () => {
                 if (['signals', 'detail', 'reports'].includes(route)) return 'signals';
@@ -2734,7 +2698,20 @@
                             </div>
                         )}
                         {route === 'editor' && (
-                            <EditorHome onBack={() => handleRouteChange('produce')} />
+                            <EditorHome 
+                                onBack={() => {
+                                    // Move the specific post to the Draft tab
+                                    const card = CONTENT_CARDS.find(c => c.id === 1);
+                                    if (card) {
+                                        card.badge = 'Draft';
+                                    }
+                                    handleRouteChange('produce');
+                                }} 
+                                onPublish={() => {
+                                    setShowPublishToast(true);
+                                    handleRouteChange('produce');
+                                }}
+                            />
                         )}
                     </Layout>
 
@@ -2770,6 +2747,15 @@
                             <span className="text-sm text-[#F2F2F3] font-sans whitespace-nowrap">Signal dismissed</span>
                             <span className="text-[#6B6B72]">&middot;</span>
                             <button onClick={() => setShowSignalToast(false)} className="text-sm font-medium text-[#FC632B] hover:text-[#F2F2F3] transition-colors whitespace-nowrap focus:outline-none">Undo</button>
+                        </div>,
+                        document.body
+                    )}
+
+                    {/* Global Publish Toast */}
+                    {showPublishToast && ReactDOM.createPortal(
+                        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] bg-[#242428] border border-[#2A2A2E] shadow-2xl rounded-full px-5 py-3 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-5 duration-300">
+                            <Icon name="check_circle" size={18} className="text-[#56DAB0]" />
+                            <span className="text-sm text-[#F2F2F3] font-sans whitespace-nowrap">Post published successfully!</span>
                         </div>,
                         document.body
                     )}
