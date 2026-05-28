@@ -1647,36 +1647,482 @@
         );
 
         // --- SETTINGS VIEW ---
-        const Settings = () => (
-            <div className="max-w-4xl mx-auto animate-in fade-in pb-20">
-                <h1 className="text-3xl font-heading mb-10 text-[#F2F2F3]">Settings</h1>
-                <section className="mb-12">
-                    <h2 className="text-xs font-mono text-[#6B6B72] uppercase mb-6 tracking-widest">Integrations</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {['Google Analytics', 'Search Console', 'HubSpot', 'WordPress'].map(lib => (
-                            <div key={lib} className="bg-[#1A1A1E] border border-[#2A2A2E] p-6 rounded-xl flex items-center justify-between hover:bg-[#242428] transition-colors">
-                                <span className="font-medium text-[#F2F2F3]">{lib}</span>
-                                <span className="text-[10px] text-[#56DAB0] font-mono bg-[#56DAB0]/10 px-2 py-1 rounded uppercase">Active</span>
-                            </div>
-                        ))}
+        const Settings = () => {
+            const [role, setRole] = useState('strategist');
+            const [activeSection, setActiveSection] = useState('account');
+            const [showToast, setShowToast] = useState(false);
+
+            // Default States
+            const defaultAccount = {
+                name: role === 'strategist' ? 'Sarah K.' : 'Jamie D.',
+                email: role === 'strategist' ? 'sarah@company.com' : 'jamie@company.com',
+            };
+            
+            const defaultNotificationsWriter = {
+                briefAssigned: true,
+                publishedConfirmation: true,
+                signalOnPosts: true
+            };
+
+            const defaultNotificationsStrategist = {
+                signalDetected: true,
+                briefOpened: false,
+                writerPublished: false,
+                reportReady: true
+            };
+
+            const defaultThresholds = { trafficDrop: '20', trafficDays: '30', rankLoss: '3' };
+
+            // Form States
+            const [accountForm, setAccountForm] = useState(defaultAccount);
+            const [showPassword, setShowPassword] = useState(false);
+            const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
+            const [notifWriter, setNotifWriter] = useState(defaultNotificationsWriter);
+            const [notifStrategist, setNotifStrategist] = useState(defaultNotificationsStrategist);
+            const [thresholdsForm, setThresholdsForm] = useState(defaultThresholds);
+
+            // Effect to handle Role Switching
+            useEffect(() => {
+                setAccountForm({
+                    name: role === 'strategist' ? 'Sarah K.' : 'Jamie D.',
+                    email: role === 'strategist' ? 'sarah@company.com' : 'jamie@company.com'
+                });
+                setShowPassword(false);
+                if (role === 'writer' && ['integrations', 'team', 'thresholds'].includes(activeSection)) {
+                    setActiveSection('account');
+                }
+            }, [role]);
+
+            // Toast Handler
+            useEffect(() => {
+                let timer;
+                if (showToast) {
+                    timer = setTimeout(() => setShowToast(false), 4000);
+                }
+                return () => clearTimeout(timer);
+            }, [showToast]);
+
+            const handleSave = () => {
+                setShowToast(true);
+            };
+
+            const handleDiscardAccount = () => {
+                setAccountForm(defaultAccount);
+                setShowPassword(false);
+                setPasswordForm({ current: '', new: '', confirm: '' });
+            };
+
+            const handleDiscardNotifications = () => {
+                if (role === 'writer') setNotifWriter(defaultNotificationsWriter);
+                else setNotifStrategist(defaultNotificationsStrategist);
+            };
+
+            const handleDiscardThresholds = () => {
+                setThresholdsForm(defaultThresholds);
+            };
+
+            // Helpers
+            const navItems = role === 'strategist' 
+                ? [ {id: 'account', label: 'Account'}, {id: 'notifications', label: 'Notifications'}, {id: 'integrations', label: 'Integrations'}, {id: 'team', label: 'Team'}, {id: 'thresholds', label: 'Signal thresholds'}, {id: 'workspace', label: 'Workspace'} ]
+                : [ {id: 'account', label: 'Account'}, {id: 'notifications', label: 'Notifications'}, {id: 'workspace', label: 'Workspace'} ];
+
+            const ReadOnlyField = ({ value, badge }) => (
+                <div className="relative">
+                    <div className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[12px] text-[#6B6B72] font-sans text-[14px]">
+                        {value}
                     </div>
-                </section>
-                <section>
-                    <h2 className="text-xs font-mono text-[#6B6B72] uppercase mb-6 tracking-widest">Team access</h2>
-                    <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-xl overflow-hidden">
-                        {['Jamie D.', 'Alex T.', 'Sarah K.', 'Jordan L.'].map(user => (
-                            <div key={user} className="p-5 border-b border-[#2A2A2E] last:border-0 flex justify-between items-center hover:bg-[#242428]">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-[#2A2A2E] flex items-center justify-center text-xs text-[#9B9BA4]">{user[0]}</div>
-                                    <span className="text-sm font-medium text-[#F2F2F3]">{user}</span>
+                    <div className="absolute right-[12px] top-1/2 -translate-y-1/2">
+                        {badge ? badge : <span className="font-mono text-[10px] text-[#6B6B72] uppercase">Read only</span>}
+                    </div>
+                </div>
+            );
+
+            const Toggle = ({ checked, onChange }) => (
+                <button 
+                    type="button"
+                    onClick={onChange}
+                    className={`w-[36px] h-[20px] rounded-full relative transition-colors duration-200 ease-in-out shrink-0 focus:outline-none ${checked ? 'bg-[#FC632B]' : 'bg-[#2A2A2E]'}`}
+                >
+                    <div className={`absolute top-[2px] left-[2px] w-[16px] h-[16px] bg-white rounded-full transition-transform duration-200 ease-in-out ${checked ? 'translate-x-[16px]' : 'translate-x-0'}`} />
+                </button>
+            );
+
+            return (
+                <div className="w-full max-w-[1100px] mx-auto pt-[40px] pb-[80px] animate-in fade-in">
+                    <h1 className="text-[32px] font-heading text-[#F2F2F3] mb-[40px]">Settings</h1>
+                    
+                    <div className="flex gap-[48px]">
+                        {/* LEFT COLUMN: NAVIGATION */}
+                        <div className="w-[240px] shrink-0 border-r border-[#2A2A2E] pr-[24px] flex flex-col">
+                            <div className="flex flex-col gap-1">
+                                {navItems.map(item => (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => setActiveSection(item.id)}
+                                        className={`w-full text-left px-[12px] py-[8px] rounded-[8px] text-[14px] font-sans transition-all duration-200 border-l-[2px] ${
+                                            activeSection === item.id 
+                                            ? 'bg-[#242428] text-[#F2F2F3] border-[#FC632B] font-medium' 
+                                            : 'text-[#6B6B72] hover:text-[#F2F2F3] hover:bg-[#1A1A1E] border-transparent'
+                                        }`}
+                                    >
+                                        {item.label}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            {/* Demo Toggle */}
+                            <div className="mt-[40px] pt-[24px] border-t border-[#2A2A2E]">
+                                <button 
+                                    onClick={() => setRole(role === 'strategist' ? 'writer' : 'strategist')}
+                                    className="flex items-center gap-2 text-[13px] font-sans text-[#6B6B72] hover:text-[#9B9BA4] transition-colors"
+                                >
+                                    <Icon name="swap_horiz" size={16} /> Demo: switch role
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* RIGHT COLUMN: CONTENT PANEL */}
+                        <div className="flex-1">
+                            
+                            {/* ACCOUNT SECTION */}
+                            {activeSection === 'account' && (
+                                <div className="animate-in fade-in">
+                                    <h2 className="text-[18px] font-heading text-[#F2F2F3] border-b border-[#2A2A2E] pb-[16px] mb-[24px]">Account</h2>
+                                    
+                                    <div className="flex items-center gap-[16px] mb-[24px]">
+                                        <div className="w-[48px] h-[48px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center text-[18px] font-sans font-medium text-[#9B9BA4]">
+                                            {accountForm.name.charAt(0)}
+                                        </div>
+                                        <button className="text-[13px] font-sans font-medium text-[#9B9BA4] hover:text-[#F2F2F3] transition-colors">Update photo</button>
+                                    </div>
+
+                                    <div className="flex flex-col gap-[20px] max-w-[480px]">
+                                        <div className="flex flex-col gap-[8px]">
+                                            <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Full name</label>
+                                            <input 
+                                                type="text" 
+                                                value={accountForm.name}
+                                                onChange={(e) => setAccountForm({...accountForm, name: e.target.value})}
+                                                className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] px-[12px] py-[10px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors w-full"
+                                            />
+                                        </div>
+                                        
+                                        <div className="flex flex-col gap-[8px]">
+                                            <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Email address</label>
+                                            <input 
+                                                type="email" 
+                                                value={accountForm.email}
+                                                onChange={(e) => setAccountForm({...accountForm, email: e.target.value})}
+                                                className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] px-[12px] py-[10px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors w-full"
+                                            />
+                                        </div>
+
+                                        <div className="flex flex-col gap-[8px]">
+                                            <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Role</label>
+                                            <ReadOnlyField value={role === 'strategist' ? 'Strategist' : 'Writer'} />
+                                        </div>
+
+                                        {!showPassword ? (
+                                            <button 
+                                                onClick={() => setShowPassword(true)}
+                                                className="text-[14px] font-sans font-medium text-[#9B9BA4] hover:text-[#F2F2F3] transition-colors w-fit mt-[8px]"
+                                            >
+                                                Change password
+                                            </button>
+                                        ) : (
+                                            <div className="flex flex-col gap-[16px] mt-[8px] p-[16px] bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] animate-in slide-in-from-top-2 duration-200">
+                                                <div className="flex flex-col gap-[8px]">
+                                                    <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Current password</label>
+                                                    <input type="password" value={passwordForm.current} onChange={(e) => setPasswordForm({...passwordForm, current: e.target.value})} className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] px-[12px] py-[10px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors w-full" />
+                                                </div>
+                                                <div className="flex flex-col gap-[8px]">
+                                                    <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">New password</label>
+                                                    <input type="password" value={passwordForm.new} onChange={(e) => setPasswordForm({...passwordForm, new: e.target.value})} className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] px-[12px] py-[10px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors w-full" />
+                                                </div>
+                                                <div className="flex flex-col gap-[8px]">
+                                                    <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Confirm new password</label>
+                                                    <input type="password" value={passwordForm.confirm} onChange={(e) => setPasswordForm({...passwordForm, confirm: e.target.value})} className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] px-[12px] py-[10px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors w-full" />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="flex justify-end gap-[12px] mt-[24px] pt-[20px] border-t border-[#2A2A2E]">
+                                        <button onClick={handleDiscardAccount} className="px-[24px] py-[10px] rounded-full text-[14px] font-sans font-medium border border-[#2A2A2E] text-[#F2F2F3] hover:bg-[#242428] transition-colors">Discard changes</button>
+                                        <button onClick={handleSave} className="px-[24px] py-[10px] rounded-full text-[14px] font-sans font-medium bg-[#FC632B] text-white hover:opacity-90 transition-opacity">Save changes</button>
+                                    </div>
                                 </div>
-                                <Icon name="more_horiz" size={20} className="text-[#6B6B72] cursor-pointer hover:text-[#F2F2F3]" />
-                            </div>
-                        ))}
+                            )}
+
+                            {/* NOTIFICATIONS SECTION */}
+                            {activeSection === 'notifications' && (
+                                <div className="animate-in fade-in">
+                                    <h2 className="text-[18px] font-heading text-[#F2F2F3] border-b border-[#2A2A2E] pb-[16px] mb-[24px]">Notifications</h2>
+                                    <p className="font-sans text-[13px] text-[#9B9BA4] mb-[24px]">
+                                        {role === 'writer' ? "Choose which updates you receive." : "Choose which updates you and your team receive."}
+                                    </p>
+
+                                    <div className="flex flex-col max-w-[600px]">
+                                        {role === 'writer' ? (
+                                            <>
+                                                <div className="flex items-center justify-between py-[16px] border-b border-[#2A2A2E]">
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Brief assigned</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a strategist sends you a new brief</div>
+                                                    </div>
+                                                    <Toggle checked={notifWriter.briefAssigned} onChange={() => setNotifWriter({...notifWriter, briefAssigned: !notifWriter.briefAssigned})} />
+                                                </div>
+                                                <div className="flex items-center justify-between py-[16px] border-b border-[#2A2A2E]">
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Published confirmation</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When your post goes live and tracking starts</div>
+                                                    </div>
+                                                    <Toggle checked={notifWriter.publishedConfirmation} onChange={() => setNotifWriter({...notifWriter, publishedConfirmation: !notifWriter.publishedConfirmation})} />
+                                                </div>
+                                                <div className="flex items-center justify-between py-[16px]">
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Signal on your posts</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a post you wrote gets flagged with a signal</div>
+                                                    </div>
+                                                    <Toggle checked={notifWriter.signalOnPosts} onChange={() => setNotifWriter({...notifWriter, signalOnPosts: !notifWriter.signalOnPosts})} />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="flex items-center justify-between py-[16px] border-b border-[#2A2A2E]">
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Signal detected</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When any tracked post crosses a signal threshold</div>
+                                                    </div>
+                                                    <Toggle checked={notifStrategist.signalDetected} onChange={() => setNotifStrategist({...notifStrategist, signalDetected: !notifStrategist.signalDetected})} />
+                                                </div>
+                                                <div className="flex items-center justify-between py-[16px] border-b border-[#2A2A2E]">
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Brief opened</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a writer opens a brief you assigned</div>
+                                                    </div>
+                                                    <Toggle checked={notifStrategist.briefOpened} onChange={() => setNotifStrategist({...notifStrategist, briefOpened: !notifStrategist.briefOpened})} />
+                                                </div>
+                                                <div className="flex items-center justify-between py-[16px] border-b border-[#2A2A2E]">
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Writer published</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a writer publishes a piece in the workspace</div>
+                                                    </div>
+                                                    <Toggle checked={notifStrategist.writerPublished} onChange={() => setNotifStrategist({...notifStrategist, writerPublished: !notifStrategist.writerPublished})} />
+                                                </div>
+                                                <div className="flex items-center justify-between py-[16px]">
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Report ready</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a monthly report is auto-generated</div>
+                                                    </div>
+                                                    <Toggle checked={notifStrategist.reportReady} onChange={() => setNotifStrategist({...notifStrategist, reportReady: !notifStrategist.reportReady})} />
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="flex justify-end gap-[12px] mt-[24px] pt-[20px] border-t border-[#2A2A2E]">
+                                        <button onClick={handleDiscardNotifications} className="px-[24px] py-[10px] rounded-full text-[14px] font-sans font-medium border border-[#2A2A2E] text-[#F2F2F3] hover:bg-[#242428] transition-colors">Discard changes</button>
+                                        <button onClick={handleSave} className="px-[24px] py-[10px] rounded-full text-[14px] font-sans font-medium bg-[#FC632B] text-white hover:opacity-90 transition-opacity">Save changes</button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* WORKSPACE SECTION */}
+                            {activeSection === 'workspace' && (
+                                <div className="animate-in fade-in">
+                                    <h2 className="text-[18px] font-heading text-[#F2F2F3] border-b border-[#2A2A2E] pb-[16px] mb-[24px]">Workspace</h2>
+                                    
+                                    <div className="flex flex-col gap-[20px] max-w-[480px]">
+                                        <div className="flex flex-col gap-[8px]">
+                                            <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Workspace name</label>
+                                            <ReadOnlyField value="Company Workspace" />
+                                        </div>
+                                        <div className="flex flex-col gap-[8px]">
+                                            <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Plan</label>
+                                            <ReadOnlyField 
+                                                value="Growth plan" 
+                                                badge={<span className="font-mono text-[10px] text-[#56DAB0] bg-[#56DAB0]/15 px-[6px] py-[2px] rounded-[4px] uppercase">Active</span>} 
+                                            />
+                                        </div>
+                                        {role === 'strategist' && (
+                                            <div className="flex flex-col gap-[8px]">
+                                                <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Admin contact</label>
+                                                <ReadOnlyField value="admin@company.com" />
+                                            </div>
+                                        )}
+                                        <p className="font-sans text-[13px] text-[#6B6B72] mt-[16px]">
+                                            To change workspace settings or manage billing, contact your admin.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* INTEGRATIONS SECTION (Strategist only) */}
+                            {role === 'strategist' && activeSection === 'integrations' && (
+                                <div className="animate-in fade-in">
+                                    <h2 className="text-[18px] font-heading text-[#F2F2F3] border-b border-[#2A2A2E] pb-[16px] mb-[24px]">Integrations</h2>
+                                    <p className="font-sans text-[13px] text-[#9B9BA4] mb-[24px]">
+                                        Connect your analytics tools so Scribe AI can track signals across your content.
+                                    </p>
+
+                                    <div className="flex flex-col gap-[8px] max-w-[600px]">
+                                        {/* Row 1 */}
+                                        <div className="flex items-center justify-between p-[16px] bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px]">
+                                            <div className="flex items-start">
+                                                <Icon name="language" size={16} className="text-[#9B9BA4] mt-[2px]" />
+                                                <div className="ml-[12px]">
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Google Analytics</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">workspace@company.com</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-[16px]">
+                                                <span className="font-mono text-[10px] text-[#56DAB0] bg-[#56DAB0]/15 px-[8px] py-[4px] rounded-[6px] uppercase tracking-wider">Connected</span>
+                                                <button className="text-[13px] font-sans font-medium text-[#6B6B72] hover:text-[#FF4949] transition-colors">Disconnect</button>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Row 2 */}
+                                        <div className="flex items-center justify-between p-[16px] bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px]">
+                                            <div className="flex items-start">
+                                                <Icon name="search" size={16} className="text-[#9B9BA4] mt-[2px]" />
+                                                <div className="ml-[12px]">
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Search Console</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">company.com</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-[16px]">
+                                                <span className="font-mono text-[10px] text-[#56DAB0] bg-[#56DAB0]/15 px-[8px] py-[4px] rounded-[6px] uppercase tracking-wider">Connected</span>
+                                                <button className="text-[13px] font-sans font-medium text-[#6B6B72] hover:text-[#FF4949] transition-colors">Disconnect</button>
+                                            </div>
+                                        </div>
+
+                                        {/* Row 3 */}
+                                        <div className="flex items-center justify-between p-[16px] bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px]">
+                                            <div className="flex items-start">
+                                                <Icon name="hub" size={16} className="text-[#9B9BA4] mt-[2px]" />
+                                                <div className="ml-[12px]">
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">CRM</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-[16px]">
+                                                <span className="font-mono text-[10px] text-[#6B6B72] bg-[#6B6B72]/15 border border-dashed border-[#6B6B72]/50 px-[8px] py-[4px] rounded-[6px] uppercase tracking-wider">Not connected</span>
+                                                <button className="text-[13px] font-sans font-medium text-[#FC632B] hover:underline transition-colors w-[76px] text-right">Connect</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TEAM SECTION (Strategist only) */}
+                            {role === 'strategist' && activeSection === 'team' && (
+                                <div className="animate-in fade-in">
+                                    <h2 className="text-[18px] font-heading text-[#F2F2F3] border-b border-[#2A2A2E] pb-[16px] mb-[24px]">Team</h2>
+                                    <p className="font-sans text-[13px] text-[#9B9BA4] mb-[24px]">
+                                        Writers assigned to you by your admin. Contact your admin to add or remove members.
+                                    </p>
+
+                                    <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] overflow-hidden max-w-[600px]">
+                                        {/* Row 1 */}
+                                        <div className="flex items-center justify-between p-[16px] px-[20px] border-b border-[#2A2A2E]">
+                                            <div className="flex items-center">
+                                                <div className="w-[32px] h-[32px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center font-sans font-medium text-[13px] text-[#9B9BA4]">J</div>
+                                                <span className="font-sans font-medium text-[14px] text-[#F2F2F3] ml-[12px]">Jamie D.</span>
+                                                <span className="font-mono text-[10px] text-[#6B6B72] uppercase ml-[8px]">Writer</span>
+                                            </div>
+                                            <span className="font-mono text-[11px] text-[#6B6B72] uppercase">Active today</span>
+                                        </div>
+                                        
+                                        {/* Row 2 */}
+                                        <div className="flex items-center justify-between p-[16px] px-[20px]">
+                                            <div className="flex items-center">
+                                                <div className="w-[32px] h-[32px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center font-sans font-medium text-[13px] text-[#9B9BA4]">A</div>
+                                                <span className="font-sans font-medium text-[14px] text-[#F2F2F3] ml-[12px]">Alex T.</span>
+                                                <span className="font-mono text-[10px] text-[#6B6B72] uppercase ml-[8px]">Writer</span>
+                                            </div>
+                                            <span className="font-mono text-[11px] text-[#6B6B72] uppercase">Active 2 days ago</span>
+                                        </div>
+                                    </div>
+                                    <p className="font-sans text-[13px] text-[#6B6B72] mt-[16px]">
+                                        To add or remove team members, contact your admin.
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* SIGNAL THRESHOLDS SECTION (Strategist only) */}
+                            {role === 'strategist' && activeSection === 'thresholds' && (
+                                <div className="animate-in fade-in">
+                                    <h2 className="text-[18px] font-heading text-[#F2F2F3] border-b border-[#2A2A2E] pb-[16px] mb-[24px]">Signal thresholds</h2>
+                                    <p className="font-sans text-[13px] text-[#9B9BA4] mb-[24px]">
+                                        Scribe AI flags a post when it crosses these thresholds.<br />
+                                        Applies to all tracked posts in this workspace.
+                                    </p>
+
+                                    <div className="flex flex-col max-w-[660px]">
+                                        {/* Row 1 */}
+                                        <div className="flex items-center justify-between py-[16px] border-b border-[#2A2A2E]">
+                                            <div>
+                                                <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Traffic drop</div>
+                                                <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">Flag this post when organic traffic falls significantly</div>
+                                            </div>
+                                            <div className="flex items-center font-sans text-[14px] text-[#F2F2F3]">
+                                                Flag when traffic drops more than 
+                                                <input 
+                                                    type="text" 
+                                                    value={thresholdsForm.trafficDrop}
+                                                    onChange={(e) => setThresholdsForm({...thresholdsForm, trafficDrop: e.target.value})}
+                                                    className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] w-[52px] py-[6px] px-[10px] text-center focus:outline-none focus:border-[#FC632B]/50 transition-colors mx-[8px]" 
+                                                />
+                                                % over
+                                                <input 
+                                                    type="text" 
+                                                    value={thresholdsForm.trafficDays}
+                                                    onChange={(e) => setThresholdsForm({...thresholdsForm, trafficDays: e.target.value})}
+                                                    className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] w-[52px] py-[6px] px-[10px] text-center focus:outline-none focus:border-[#FC632B]/50 transition-colors mx-[8px]" 
+                                                />
+                                                days
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Row 2 */}
+                                        <div className="flex items-center justify-between py-[16px]">
+                                            <div>
+                                                <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Rank loss</div>
+                                                <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">Flag this post when search ranking falls</div>
+                                            </div>
+                                            <div className="flex items-center font-sans text-[14px] text-[#F2F2F3]">
+                                                Flag when rank drops more than 
+                                                <input 
+                                                    type="text" 
+                                                    value={thresholdsForm.rankLoss}
+                                                    onChange={(e) => setThresholdsForm({...thresholdsForm, rankLoss: e.target.value})}
+                                                    className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] w-[52px] py-[6px] px-[10px] text-center focus:outline-none focus:border-[#FC632B]/50 transition-colors mx-[8px]" 
+                                                />
+                                                positions
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex justify-end gap-[12px] mt-[24px] pt-[20px] border-t border-[#2A2A2E] max-w-[660px]">
+                                        <button onClick={handleDiscardThresholds} className="px-[24px] py-[10px] rounded-full text-[14px] font-sans font-medium border border-[#2A2A2E] text-[#F2F2F3] hover:bg-[#242428] transition-colors">Discard changes</button>
+                                        <button onClick={handleSave} className="px-[24px] py-[10px] rounded-full text-[14px] font-sans font-medium bg-[#FC632B] text-white hover:opacity-90 transition-opacity">Save changes</button>
+                                    </div>
+                                </div>
+                            )}
+
+                        </div>
                     </div>
-                </section>
-            </div>
-        );
+
+                    {/* Inline Toast Notification */}
+                    {showToast && ReactDOM.createPortal(
+                        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] bg-[#242428] border border-[#2A2A2E] shadow-2xl rounded-full px-5 py-2.5 animate-in slide-in-from-bottom-5 duration-300">
+                            <span className="text-[14px] text-[#F2F2F3] font-sans whitespace-nowrap">Changes saved</span>
+                        </div>,
+                        document.body
+                    )}
+                </div>
+            );
+        };
 
         // --- MAIN APP COMPONENT ---
 
