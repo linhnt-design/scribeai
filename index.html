@@ -778,4 +778,1242 @@
                                         </div>
                                         <div className="flex flex-col gap-2">
                                             <div className="flex items-center gap-1.5 text-[#6B6B72]"><Icon name="group" size={16} /> <span className="text-xs font-mono uppercase tracking-wider">Audience</span></div>
-                                            <div className="text-sm text-[#F2F2F3] font-medium leading-snug
+                                            <div className="text-sm text-[#F2F2F3] font-medium leading-snug">{selectedCard.id % 2 === 0 ? 'Marketing Leads' : 'SaaS Founders'}</div>
+                                        </div>
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-center gap-1.5 text-[#6B6B72]"><Icon name="format_list_numbered" size={16} /> <span className="text-xs font-mono uppercase tracking-wider">Word count</span></div>
+                                            <div className="text-sm text-[#F2F2F3] font-medium leading-snug">{selectedCard.stats.split(' ')[0]} words</div>
+                                        </div>
+                                    </div>
+                                    <div className="p-5 rounded-xl bg-[#4DCBFD]/10 border border-[#4DCBFD]/30 flex gap-4 items-start">
+                                        <Icon name="lightbulb" size={24} className="text-[#4DCBFD] shrink-0" />
+                                        <div className="flex-1">
+                                            <div className="text-xs font-mono uppercase tracking-widest text-[#4DCBFD] mb-2 font-medium">AI Signal</div>
+                                            <p className="text-sm text-[#F2F2F3] leading-relaxed">
+                                                {selectedCard.context}. This presents an immediate opportunity to update the <strong>{selectedCard.keyword}</strong> section and reclaim search visibility based on current trends.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-6 border-t border-[#2A2A2E] flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#242428]/30">
+                                    <a href={selectedCard.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-[#9B9BA4] hover:text-[#4DCBFD] transition-colors flex items-center gap-1.5 w-full sm:w-auto justify-center shrink-0">
+                                        <Icon name="open_in_new" size={16} /> View post
+                                    </a>
+                                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto justify-end">
+                                        <Button variant="secondary" onClick={() => handleDismiss(selectedCard)}>Dismiss signal</Button>
+                                        <Button onClick={() => { setSelectedCard(null); onOpenBrief('content_card'); }}>Act on this</Button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>,
+                        document.body
+                    )}
+                    {showToast && ReactDOM.createPortal(
+                        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] bg-[#242428] border border-[#2A2A2E] shadow-2xl rounded-full px-5 py-3 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300">
+                            <span className="text-sm text-[#F2F2F3] font-sans whitespace-nowrap">Signal dismissed</span>
+                            <span className="text-[#6B6B72]">&middot;</span>
+                            <button onClick={handleUndo} className="text-sm font-medium text-[#FC632B] hover:text-[#F2F2F3] transition-colors whitespace-nowrap focus:outline-none">Undo</button>
+                        </div>,
+                        document.body
+                    )}
+                </div>
+            );
+        };
+
+        const ReportsHome = ({ onBack, onPostDetail }) => {
+            const [dateRange, setDateRange] = useState('This month');
+            const [copied, setCopied] = useState(false);
+
+            const handleCopy = () => {
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+            };
+
+            return (
+                <div className="w-full max-w-[860px] mx-auto animate-in fade-in pb-20">
+                    <div className="mb-[48px] border-b border-[#2A2A2E] pb-[24px]">
+                        <button onClick={onBack} className="text-[14px] font-sans text-[#6B6B72] hover:text-[#F2F2F3] transition-colors duration-200 mb-[32px] flex items-center gap-1 cursor-pointer">
+                            <Icon name="arrow_back" size={14} /> Back to signals
+                        </button>
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-[20px]">
+                            <div>
+                                <h1 className="text-[32px] font-heading text-[#F2F2F3] tracking-[-0.01em] leading-tight mb-[6px]">Content report</h1>
+                                <p className="text-[14px] font-sans text-[#9B9BA4]">November 2024 · Auto-generated from your decisions</p>
+                            </div>
+                            <div className="flex items-center gap-[12px]">
+                                <button className="flex items-center gap-2 border border-[#2A2A2E] rounded-[100px] px-[20px] py-[8px] text-[#F2F2F3] font-sans font-medium text-[13px] bg-transparent hover:bg-[#242428] transition-colors duration-200">
+                                    <Icon name="download" size={14} className="text-[#9B9BA4]" /> Download PDF
+                                </button>
+                                <button onClick={handleCopy} className="flex items-center gap-2 border border-[#FC632B] rounded-[100px] px-[20px] py-[8px] text-[#FC632B] font-sans font-medium text-[13px] bg-transparent hover:bg-[#FC632B] hover:text-white transition-colors duration-200">
+                                    <Icon name="link" size={14} /> {copied ? 'Link copied' : 'Copy share link'}
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 mt-[20px]">
+                            {['This week', 'This month', 'This quarter', 'Custom range'].map(range => (
+                                <button key={range} onClick={() => setDateRange(range)} className={`px-[16px] py-[6px] rounded-[100px] text-[13px] font-sans transition-colors ${dateRange === range ? 'bg-[#242428] text-[#F2F2F3]' : 'bg-transparent text-[#6B6B72] hover:text-[#F2F2F3]'}`}>
+                                    {range}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mb-[48px]">
+                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[24px] text-center">
+                            <div className="text-[36px] font-heading text-[#F2F2F3] leading-none">6</div>
+                            <div className="flex items-center justify-center gap-[6px] text-[11px] font-mono text-[#6B6B72] uppercase tracking-[0.05em] mt-[10px]"><Icon name="description" size={14} /> Posts tracked</div>
+                        </div>
+                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[24px] text-center">
+                            <div className="text-[36px] font-heading text-[#56DAB0] leading-none">2</div>
+                            <div className="flex items-center justify-center gap-[6px] text-[11px] font-mono text-[#6B6B72] uppercase tracking-[0.05em] mt-[10px]"><Icon name="trending_up" size={14} /> Strong contributors</div>
+                        </div>
+                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[24px] text-center">
+                            <div className="text-[36px] font-heading text-[#FC632B] leading-none">3</div>
+                            <div className="flex items-center justify-center gap-[6px] text-[11px] font-mono text-[#6B6B72] uppercase tracking-[0.05em] mt-[10px]"><Icon name="task_alt" size={14} /> Decisions made</div>
+                        </div>
+                    </div>
+
+                    <div className="mb-[48px]">
+                        <h2 className="text-[18px] font-heading text-[#F2F2F3] mb-[16px]">What content drove pipeline this month</h2>
+                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] overflow-x-auto">
+                            <table className="w-full min-w-[700px] text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-[#2A2A2E]">
+                                        <th className="font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] font-normal p-[14px] px-[20px] w-[33%]">Title</th>
+                                        <th className="font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] font-normal p-[14px] px-[20px] w-[16%]">Pipeline</th>
+                                        <th className="font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] font-normal p-[14px] px-[20px] w-[16%]">Traffic this month</th>
+                                        <th className="font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] font-normal p-[14px] px-[20px] w-[35%]">Context</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr className="border-b border-[#2A2A2E] hover:bg-[#242428] transition-colors duration-200">
+                                        <td className="p-[16px] px-[20px] font-sans text-[14px] text-[#F2F2F3]">How to build a B2B content calendar</td>
+                                        <td className="p-[16px] px-[20px]">
+                                            <div className="inline-flex items-center gap-[6px] px-[10px] py-[4px] rounded-[8px] text-[11px] font-mono uppercase tracking-[0.04em] text-[#56DAB0] bg-[#56DAB0]/15">
+                                                <div className="w-[6px] h-[6px] rounded-full bg-[#56DAB0]" /> Strong
+                                            </div>
+                                        </td>
+                                        <td className="p-[16px] px-[20px]">
+                                            <div className="flex items-center gap-1.5 font-mono text-[13px] text-[#56DAB0] normal-case whitespace-nowrap">
+                                                <Icon name="trending_up" size={16} /> +12%
+                                            </div>
+                                        </td>
+                                        <td className="p-[16px] px-[20px] font-sans text-[13px] text-[#9B9BA4] line-clamp-1">Holding position 3 - traffic stable over 8 weeks</td>
+                                    </tr>
+                                    <tr className="border-b border-[#2A2A2E] hover:bg-[#242428] transition-colors duration-200">
+                                        <td className="p-[16px] px-[20px] font-sans text-[14px] text-[#F2F2F3]">Content distribution checklist for B2B teams</td>
+                                        <td className="p-[16px] px-[20px]">
+                                            <div className="inline-flex items-center gap-[6px] px-[10px] py-[4px] rounded-[8px] text-[11px] font-mono uppercase tracking-[0.04em] text-[#56DAB0] bg-[#56DAB0]/15">
+                                                <div className="w-[6px] h-[6px] rounded-full bg-[#56DAB0]" /> Strong
+                                            </div>
+                                        </td>
+                                        <td className="p-[16px] px-[20px]">
+                                            <div className="flex items-center gap-1.5 font-mono text-[13px] text-[#4DCBFD] normal-case whitespace-nowrap">
+                                                <Icon name="trending_flat" size={16} /> Stable
+                                            </div>
+                                        </td>
+                                        <td className="p-[16px] px-[20px] font-sans text-[13px] text-[#9B9BA4] line-clamp-1">Top performer this quarter - 3.2x above average engagement</td>
+                                    </tr>
+                                    <tr className="border-b border-[#2A2A2E] hover:bg-[#242428] transition-colors duration-200">
+                                        <td className="p-[16px] px-[20px] font-sans text-[14px] text-[#F2F2F3]">The complete guide to B2B email strategy</td>
+                                        <td className="p-[16px] px-[20px]">
+                                            <div className="inline-flex items-center gap-[6px] px-[10px] py-[4px] rounded-[8px] text-[11px] font-mono uppercase tracking-[0.04em] text-[#E1454D] bg-[#E1454D]/15">
+                                                <div className="w-[6px] h-[6px] rounded-full bg-[#E1454D]" /> Weak
+                                            </div>
+                                        </td>
+                                        <td className="p-[16px] px-[20px]">
+                                            <div className="flex items-center gap-1.5 font-mono text-[13px] text-[#E1454D] normal-case whitespace-nowrap">
+                                                <Icon name="trending_down" size={16} /> -41%
+                                            </div>
+                                        </td>
+                                        <td className="p-[16px] px-[20px] font-sans text-[13px] text-[#9B9BA4] line-clamp-1">Lost position 4 to 9 - refresh brief assigned to Jamie D.</td>
+                                    </tr>
+                                    <tr className="hover:bg-[#242428] transition-colors duration-200">
+                                        <td className="p-[16px] px-[20px] font-sans text-[14px] text-[#F2F2F3]">SaaS onboarding email sequences</td>
+                                        <td className="p-[16px] px-[20px]">
+                                            <div className="inline-flex items-center gap-[6px] px-[10px] py-[4px] rounded-[8px] text-[11px] font-mono uppercase tracking-[0.04em] text-[#FFB349] bg-[#FFB349]/15">
+                                                <div className="w-[6px] h-[6px] rounded-full bg-[#FFB349]" /> Moderate
+                                            </div>
+                                        </td>
+                                        <td className="p-[16px] px-[20px]">
+                                            <div className="flex items-center gap-1.5 font-mono text-[13px] text-[#E1454D] normal-case whitespace-nowrap">
+                                                <Icon name="trending_down" size={16} /> -8%
+                                            </div>
+                                        </td>
+                                        <td className="p-[16px] px-[20px] font-sans text-[13px] text-[#9B9BA4] line-clamp-1">Dropped to position 7 - expand brief assigned to Alex T.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="mb-[48px]">
+                        <h2 className="text-[18px] font-heading text-[#F2F2F3] mb-[16px]">Decisions made</h2>
+                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] overflow-hidden flex flex-col">
+                            <div className="p-[20px] px-[24px] border-b border-[#2A2A2E]">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center">
+                                        <span className="font-mono text-[11px] text-[#6B6B72]">Nov 14, 2024</span>
+                                        <span className="font-mono text-[11px] text-[#FC632B] bg-[#FC632B]/15 px-[10px] py-[3px] rounded-[8px] uppercase tracking-wider ml-[12px]">Refresh</span>
+                                        <span className="font-sans text-[14px] font-medium text-[#F2F2F3] ml-[10px]">The complete guide to B2B email strategy</span>
+                                    </div>
+                                    <div className="flex items-center gap-[12px]">
+                                        <span className="font-mono text-[11px] text-[#7B8CDE] bg-[#7B8CDE]/15 px-[10px] py-[3px] rounded-[8px] uppercase tracking-wider">In progress</span>
+                                        <span className="font-sans text-[13px] text-[#9B9BA4]">Jamie D.</span>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-start mt-[10px]">
+                                    <div className="flex items-start">
+                                        <span className="font-mono text-[11px] text-[#6B6B72] uppercase mr-[6px] mt-0.5">Signal:</span>
+                                        <span className="font-sans text-[13px] text-[#9B9BA4]">-41% traffic, lost position 4 to 9</span>
+                                    </div>
+                                    <div className="flex items-start text-right">
+                                        <span className="font-mono text-[11px] text-[#6B6B72] uppercase mr-[6px] mt-0.5">Expected:</span>
+                                        <span className="font-sans text-[13px] text-[#9B9BA4]">Recover position 4-6 within 60 days</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-[20px] px-[24px] border-b border-[#2A2A2E]">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center">
+                                        <span className="font-mono text-[11px] text-[#6B6B72]">Nov 10, 2024</span>
+                                        <span className="font-mono text-[11px] text-[#56DAB0] bg-[#56DAB0]/15 px-[10px] py-[3px] rounded-[8px] uppercase tracking-wider ml-[12px]">Expand</span>
+                                        <span className="font-sans text-[14px] font-medium text-[#F2F2F3] ml-[10px]">SaaS onboarding email sequences</span>
+                                    </div>
+                                    <div className="flex items-center gap-[12px]">
+                                        <span className="font-mono text-[11px] text-[#7B8CDE] bg-[#7B8CDE]/15 px-[10px] py-[3px] rounded-[8px] uppercase tracking-wider">In progress</span>
+                                        <span className="font-sans text-[13px] text-[#9B9BA4]">Alex T.</span>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-start mt-[10px]">
+                                    <div className="flex items-start">
+                                        <span className="font-mono text-[11px] text-[#6B6B72] uppercase mr-[6px] mt-0.5">Signal:</span>
+                                        <span className="font-sans text-[13px] text-[#9B9BA4]">Dropped to position 7, cluster gap identified</span>
+                                    </div>
+                                    <div className="flex items-start text-right">
+                                        <span className="font-mono text-[11px] text-[#6B6B72] uppercase mr-[6px] mt-0.5">Expected:</span>
+                                        <span className="font-sans text-[13px] text-[#9B9BA4]">Build topical authority over 90 days</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-[20px] px-[24px]">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center">
+                                        <span className="font-mono text-[11px] text-[#6B6B72]">Nov 7, 2024</span>
+                                        <span className="font-mono text-[11px] text-[#7B8CDE] bg-[#7B8CDE]/15 px-[10px] py-[3px] rounded-[8px] uppercase tracking-wider ml-[12px]">Repurpose</span>
+                                        <span className="font-sans text-[14px] font-medium text-[#F2F2F3] ml-[10px]">How to write a B2B case study</span>
+                                    </div>
+                                    <div className="flex items-center gap-[12px]">
+                                        <span className="font-mono text-[11px] text-[#56DAB0] bg-[#56DAB0]/15 px-[10px] py-[3px] rounded-[8px] uppercase tracking-wider">Completed</span>
+                                        <span className="font-sans text-[13px] text-[#9B9BA4]">Jamie D.</span>
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-start mt-[10px]">
+                                    <div className="flex items-start">
+                                        <span className="font-mono text-[11px] text-[#6B6B72] uppercase mr-[6px] mt-0.5">Signal:</span>
+                                        <span className="font-sans text-[13px] text-[#9B9BA4]">Traffic stable but engagement low - better fit for LinkedIn</span>
+                                    </div>
+                                    <div className="flex items-start text-right">
+                                        <span className="font-mono text-[11px] text-[#6B6B72] uppercase mr-[6px] mt-0.5">Expected:</span>
+                                        <span className="font-sans text-[13px] text-[#9B9BA4]">Extend reach without new research</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 className="text-[18px] font-heading text-[#F2F2F3] mb-[16px]">Signals still open</h2>
+                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] overflow-hidden flex flex-col">
+                            <div className="p-[16px] px-[24px] flex justify-between items-center border-b border-[#2A2A2E] last:border-0">
+                                <div className="flex items-center gap-[12px]">
+                                    <span className="font-mono text-[11px] text-[#FFC338] bg-[#FFC338]/15 px-[10px] py-[3px] rounded-[8px] uppercase tracking-wider">Keyword opportunity</span>
+                                    <span className="font-sans text-[14px] text-[#F2F2F3]">B2B LinkedIn content strategy for 2024</span>
+                                </div>
+                                <div className="flex items-center gap-[16px]">
+                                    <span className="font-mono text-[11px] text-[#6B6B72] uppercase">7 days</span>
+                                    <button onClick={() => onPostDetail(6)} className="font-sans font-medium text-[13px] text-[#FC632B] hover:underline">Review signal &rarr;</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const EditorHome = ({ onBack }) => {
+            const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+            const [activeFormats, setActiveFormats] = useState({ h1: false, h2: false, bold: false, italic: false, underline: false, blockquote: false, ul: false, ol: false });
+
+            const updateFormatState = () => {
+                const selection = document.getSelection();
+                if (selection.rangeCount > 0) {
+                    const activeEl = selection.anchorNode?.parentElement;
+                    if (activeEl && activeEl.closest('.prose-editor')) {
+                        const blockFormat = document.queryCommandValue('formatBlock').toLowerCase();
+                        setActiveFormats({
+                            h1: blockFormat === 'h1',
+                            h2: blockFormat === 'h2',
+                            blockquote: blockFormat === 'blockquote',
+                            bold: document.queryCommandState('bold'),
+                            italic: document.queryCommandState('italic'),
+                            underline: document.queryCommandState('underline'),
+                            ul: document.queryCommandState('insertUnorderedList'),
+                            ol: document.queryCommandState('insertOrderedList'),
+                        });
+                    }
+                }
+            };
+
+            useEffect(() => {
+                document.addEventListener('selectionchange', updateFormatState);
+                return () => document.removeEventListener('selectionchange', updateFormatState);
+            }, []);
+
+            const handleFormat = (command, value = null) => {
+                document.execCommand(command, false, value);
+                updateFormatState();
+            };
+
+            const toggleBlock = (tag) => {
+                const currentBlock = document.queryCommandValue('formatBlock').toLowerCase();
+                if (currentBlock === tag.toLowerCase()) {
+                    document.execCommand('formatBlock', false, 'p');
+                } else {
+                    document.execCommand('formatBlock', false, tag);
+                }
+                updateFormatState();
+            };
+
+            const handleLink = () => {
+                const url = prompt('Enter link URL:');
+                if (url) {
+                    handleFormat('createLink', url);
+                }
+            };
+
+            const getBtnClass = (isActive) => {
+                return `w-8 h-8 flex items-center justify-center rounded-[6px] transition-colors ${isActive ? 'bg-[#242428] text-[#F2F2F3] border border-[#FC632B]/50' : 'text-[#9B9BA4] hover:bg-[#242428] hover:text-[#F2F2F3]'}`;
+            };
+
+            return (
+                <div className="w-full max-w-[1200px] mx-auto animate-in fade-in h-[calc(100vh-120px)] flex flex-col pb-4">
+                    <div className="flex justify-between items-center mb-6 shrink-0">
+                        <button onClick={onBack} className="text-[#6B6B72] flex items-center gap-1 hover:text-white transition-colors">
+                            <Icon name="chevron_left" size={18} /> Save and exit
+                        </button>
+                        <div className="flex items-center gap-4">
+                            <span className="text-[#6B6B72] font-mono text-[11px] uppercase tracking-wider">Autosaved just now</span>
+                            <Button variant="primary" className="py-2 px-6">Publish</Button>
+                        </div>
+                    </div>
+                    <div className="flex gap-6 flex-1 min-h-0">
+                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[16px] shadow-inner flex-1 flex flex-col overflow-hidden">
+                            <div className="flex items-center gap-1 border-b border-[#2A2A2E] p-2 bg-[#1A1A1E] shrink-0 overflow-x-auto no-scrollbar">
+                                <button onMouseDown={(e) => { e.preventDefault(); toggleBlock('H1'); }} className={getBtnClass(activeFormats.h1)}><Icon name="format_h1" size={18} /></button>
+                                <button onMouseDown={(e) => { e.preventDefault(); toggleBlock('H2'); }} className={getBtnClass(activeFormats.h2)}><Icon name="format_h2" size={18} /></button>
+                                <div className="w-px h-4 bg-[#2A2A2E] mx-1"></div>
+                                <button onMouseDown={(e) => { e.preventDefault(); handleFormat('bold'); }} className={getBtnClass(activeFormats.bold)}><Icon name="format_bold" size={18} /></button>
+                                <button onMouseDown={(e) => { e.preventDefault(); handleFormat('italic'); }} className={getBtnClass(activeFormats.italic)}><Icon name="format_italic" size={18} /></button>
+                                <button onMouseDown={(e) => { e.preventDefault(); handleFormat('underline'); }} className={getBtnClass(activeFormats.underline)}><Icon name="format_underlined" size={18} /></button>
+                                <div className="w-px h-4 bg-[#2A2A2E] mx-1"></div>
+                                <button onMouseDown={(e) => { e.preventDefault(); handleFormat('insertUnorderedList'); }} className={getBtnClass(activeFormats.ul)}><Icon name="format_list_bulleted" size={18} /></button>
+                                <button onMouseDown={(e) => { e.preventDefault(); handleFormat('insertOrderedList'); }} className={getBtnClass(activeFormats.ol)}><Icon name="format_list_numbered" size={18} /></button>
+                                <div className="w-px h-4 bg-[#2A2A2E] mx-1"></div>
+                                <button onMouseDown={(e) => { e.preventDefault(); toggleBlock('BLOCKQUOTE'); }} className={getBtnClass(activeFormats.blockquote)}><Icon name="format_quote" size={18} /></button>
+                                <button onMouseDown={(e) => { e.preventDefault(); handleLink(); }} className={getBtnClass(false)}><Icon name="link" size={18} /></button>
+                            </div>
+                            <div className="p-[48px] pt-[32px] overflow-y-auto flex-1">
+                                <div className="prose-editor min-h-full" contentEditable suppressContentEditableWarning data-placeholder="Start typing here...">
+                                    <h1>The complete guide to B2B email strategy</h1>
+                                    <h2>Introduction</h2>
+                                    <p>Email marketing in the B2B space is no longer just about sending newsletters. It's about highly targeted, automated sequences that drive pipeline.</p>
+                                    <p><br/></p>
+                                </div>
+                            </div>
+                        </div>
+                        {isSidebarOpen ? (
+                            <div className="w-[320px] shrink-0 flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                                <div className="w-full flex justify-end">
+                                    <div className="w-[64px] flex justify-center">
+                                        <button onClick={() => setIsSidebarOpen(false)} className="text-[#6B6B72] hover:text-[#F2F2F3] transition-colors pb-2 pt-1"><Icon name="last_page" size={20} /></button>
+                                    </div>
+                                </div>
+                                <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[16px] flex flex-col flex-1 min-h-0 overflow-hidden">
+                                    <div className="p-[16px] border-b border-[#2A2A2E] shrink-0 bg-[#1A1A1E] flex gap-3 items-center">
+                                        <div className="w-8 h-8 rounded-lg bg-[#242428] flex items-center justify-center shrink-0 border border-[#2A2A2E]"><Icon name="bar_chart" size={18} className="text-[#FC632B]" /></div>
+                                        <div>
+                                            <h3 className="text-[13px] font-medium text-[#F2F2F3] font-sans line-clamp-1">Insight for: Introduction</h3>
+                                            <p className="text-[11px] text-[#6B6B72] font-sans mt-0.5 leading-[1.4]">Triggered after completing section</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-[16px] overflow-y-auto p-[16px] no-scrollbar">
+                                        <div className="bg-[#FFDB4A]/10 border border-[#FFDB4A]/30 rounded-[12px] p-[16px]">
+                                            <div className="flex items-center gap-2 text-[#FFDB4A] mb-2"><Icon name="warning" size={16} /><span className="text-[13px] font-medium font-sans">Drop-off risk</span></div>
+                                            <p className="text-[13px] text-[#F2F2F3] font-sans leading-[1.6]">High exit rates on generic tool feature lists. Keep focus on strategy implementation.</p>
+                                        </div>
+                                        <div className="bg-[#56DAB0]/10 border border-[#56DAB0]/30 rounded-[12px] p-[16px]">
+                                            <div className="flex items-center gap-2 text-[#56DAB0] mb-2"><Icon name="group" size={16} /><span className="text-[13px] font-medium font-sans">What your audience responds to</span></div>
+                                            <p className="text-[13px] text-[#F2F2F3] font-sans leading-[1.6]">Readers consistently clicked through to the advanced segmentation templates in past intro sections.</p>
+                                        </div>
+                                        <div className="bg-[#4DCBFD]/10 border border-[#4DCBFD]/30 rounded-[12px] p-[16px]">
+                                            <div className="flex items-center gap-2 text-[#4DCBFD] mb-2"><Icon name="edit" size={16} /><span className="text-[13px] font-medium font-sans">Suggested adjustment</span></div>
+                                            <p className="text-[13px] text-[#F2F2F3] font-sans leading-[1.6]">Move the CRM integration mention to the first paragraph to hook high-intent readers immediately.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="w-[64px] shrink-0 flex flex-col gap-2 animate-in fade-in slide-in-from-right-4 duration-300">
+                                <div className="w-full flex justify-center">
+                                    <button onClick={() => setIsSidebarOpen(true)} className="text-[#6B6B72] hover:text-[#F2F2F3] transition-colors pb-2 pt-1"><Icon name="first_page" size={20} /></button>
+                                </div>
+                                <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[16px] flex flex-col flex-1 min-h-0 overflow-hidden">
+                                    <div className="p-[16px] border-b border-[#2A2A2E] flex justify-center shrink-0 bg-[#1A1A1E]">
+                                        <div className="relative cursor-pointer group" onClick={() => setIsSidebarOpen(true)}>
+                                            <div className="w-8 h-8 rounded-lg bg-[#242428] border border-[#2A2A2E] flex items-center justify-center group-hover:border-[#FC632B]/50 transition-colors"><Icon name="bar_chart" size={18} className="text-[#FC632B]" /></div>
+                                            <div className="absolute -top-1 -right-1 w-[10px] h-[10px] bg-[#FC632B] rounded-full border-[2px] border-[#1A1A1E]"></div>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-[24px] items-center p-[16px] pt-[24px] opacity-60 overflow-y-auto no-scrollbar">
+                                        <Icon name="warning" size={20} className="text-[#FFDB4A]" />
+                                        <Icon name="group" size={20} className="text-[#56DAB0]" />
+                                        <Icon name="edit" size={20} className="text-[#4DCBFD]" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const SignalsHome = ({ onPostDetail, onReports }) => (
+            <div className="animate-in fade-in duration-500 pb-20 relative">
+                <div className="relative z-0 w-[100vw] left-[50%] right-[50%] -ml-[50vw] -mr-[50vw] h-[280px] -mt-4 md:-mt-8 mb-10 flex flex-col items-center justify-center text-center overflow-hidden bg-[#0E0E10]">
+                    <HlsVideoBackground src="https://stream.mux.com/NcU3HlHeF7CUL86azTTzpy3Tlb00d6iF3BmCdFslMJYM.m3u8" className="absolute inset-0 w-full h-full object-cover opacity-[0.65] z-0" style={{ filter: 'contrast(120%) brightness(45%)' }} />
+                    <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.35] mix-blend-overlay" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 250 250' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='highResNoise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23highResNoise)'/%3E%3C/svg%3E")` }}></div>
+                    <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: 'linear-gradient(to top, #0E0E10 0%, transparent 25%)' }}></div>
+                    <div className="relative z-10 px-4 mt-6">
+                        <h1 className="text-[32px] md:text-[40px] font-heading text-[#F2F2F3] mb-3">Welcome back, Alice!</h1>
+                        <p className="text-[15px] md:text-[16px] font-sans text-[#9B9BA4]">Ready to turn data into real impactful decisions?</p>
+                    </div>
+                </div>
+
+                <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-[30px] font-heading text-[#F2F2F3] mb-2 leading-tight">Content signals</h1>
+                        <p className="text-[14px] font-sans text-[#9B9BA4]">6 pieces tracked · 3 need your attention · Last updated 2 hours ago</p>
+                    </div>
+                    <Button variant="secondary" onClick={onReports}><Icon name="open_in_new" size={18} /> Export report</Button>
+                </header>
+
+                <section className="mt-[32px]">
+                    <h2 className="text-[16px] font-heading text-[#F2F2F3] mb-[16px]">3 posts need a decision</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div className="bg-[#1A1A1E] border border-[#FF4949]/40 hover:bg-[#242428] hover:border-[#FF4949]/70 rounded-[12px] p-[20px] transition-all duration-300 ease-in-out flex flex-col group cursor-pointer" onClick={() => onPostDetail(1)}>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[11px] font-mono uppercase tracking-wider text-[#FF4949] bg-[#FF4949]/15"><div className="w-1.5 h-1.5 rounded-full bg-[#FF4949]" />Traffic drop</div>
+                                <span className="text-[11px] font-mono text-[#6B6B72] uppercase">21 days</span>
+                            </div>
+                            <h3 className="text-[14px] font-heading text-[#F2F2F3] mt-[12px] line-clamp-2">The complete guide to B2B email strategy</h3>
+                            <p className="text-[13px] font-sans text-[#9B9BA4] mt-[6px]">-41% over 3 weeks · Lost position 4 to 9</p>
+                            <div className="text-[13px] font-sans font-medium text-[#FC632B] mt-[16px]">Review signal &rarr;</div>
+                        </div>
+                        <div className="bg-[#1A1A1E] border border-[#FF4949]/40 hover:bg-[#242428] hover:border-[#FF4949]/70 rounded-[12px] p-[20px] transition-all duration-300 ease-in-out flex flex-col group cursor-pointer" onClick={() => onPostDetail(3)}>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[11px] font-mono uppercase tracking-wider text-[#FF4949] bg-[#FF4949]/15"><div className="w-1.5 h-1.5 rounded-full bg-[#FF4949]" />Rank loss</div>
+                                <span className="text-[11px] font-mono text-[#6B6B72] uppercase">14 days</span>
+                            </div>
+                            <h3 className="text-[14px] font-heading text-[#F2F2F3] mt-[12px] line-clamp-2">SaaS onboarding email sequences that convert</h3>
+                            <p className="text-[13px] font-sans text-[#9B9BA4] mt-[6px]">Dropped 2 positions · Now at position 7</p>
+                            <div className="text-[13px] font-sans font-medium text-[#FC632B] mt-[16px]">Review signal &rarr;</div>
+                        </div>
+                        <div className="bg-[#1A1A1E] border border-[#FF4949]/40 hover:bg-[#242428] hover:border-[#FF4949]/70 rounded-[12px] p-[20px] transition-all duration-300 ease-in-out flex flex-col group cursor-pointer" onClick={() => onPostDetail(6)}>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[11px] font-mono uppercase tracking-wider text-[#FFC338] bg-[#FFC338]/15"><div className="w-1.5 h-1.5 rounded-full bg-[#FFC338]" />Keyword opportunity</div>
+                                <span className="text-[11px] font-mono text-[#6B6B72] uppercase">7 days</span>
+                            </div>
+                            <h3 className="text-[14px] font-heading text-[#F2F2F3] mt-[12px] line-clamp-2">B2B LinkedIn content strategy for 2024</h3>
+                            <p className="text-[13px] font-sans text-[#9B9BA4] mt-[6px]">Related keyword gaining traction - no post covering it</p>
+                            <div className="text-[13px] font-sans font-medium text-[#FC632B] mt-[16px]">Review signal &rarr;</div>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="mt-[32px]">
+                    <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[24px]">
+                        <h2 className="text-[15px] font-heading text-[#F2F2F3] mb-[20px]">Where your team is writing vs where the signal points</h2>
+                        <div className="grid grid-cols-2 relative">
+                            <div className="absolute inset-y-0 left-1/2 w-px bg-[#2A2A2E]"></div>
+                            <div className="pr-4 mb-[12px]"><div className="text-[11px] font-mono text-[#6B6B72] uppercase tracking-[0.05em]">This month's output</div></div>
+                            <div className="pl-4 mb-[12px]"><div className="text-[11px] font-mono text-[#6B6B72] uppercase tracking-[0.05em]">Where the signal points</div></div>
+                            <div className="pr-4 py-[10px] border-b border-[#2A2A2E] text-[13px] font-sans text-[#F2F2F3]">B2B email - 2 posts</div>
+                            <div className="pl-4 py-[10px] border-b border-[#2A2A2E] text-[13px] font-sans text-[#FFC338]">B2B email - refresh needed, not new posts</div>
+                            <div className="pr-4 py-[10px] border-b border-[#2A2A2E] text-[13px] font-sans text-[#F2F2F3]">LinkedIn content - 1 post</div>
+                            <div className="pl-4 py-[10px] border-b border-[#2A2A2E] text-[13px] font-sans text-[#FFC338]">Onboarding sequences - cluster gap identified</div>
+                            <div className="pr-4 py-[10px] border-b border-[#2A2A2E] text-[13px] font-sans text-[#F2F2F3]">Case studies - 1 post</div>
+                            <div className="pl-4 py-[10px] border-b border-[#2A2A2E] text-[13px] font-sans text-[#56DAB0]">Case studies - on track, no action needed</div>
+                            <div className="pr-4 py-[10px] text-[13px] font-sans text-[#F2F2F3]">AI writing tools - 0 post</div>
+                            <div className="pl-4 py-[10px] text-[13px] font-sans text-[#FFC338]">AI writing tools - rising keyword, no coverage</div>
+                        </div>
+                        <div className="mt-[16px] bg-[#FFC338]/10 border border-[#FFC338]/30 rounded-[8px] p-[12px] px-[16px] flex items-start gap-2">
+                            <Icon name="warning" size={16} className="text-[#FFC338] shrink-0 mt-0.5" />
+                            <p className="text-[13px] font-sans text-[#F2F2F3] leading-[1.6]">2 of 4 topic areas are misaligned with current signals.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="mt-[32px]">
+                    <div className="flex justify-between items-baseline mb-[16px]">
+                        <h2 className="text-[16px] font-heading text-[#F2F2F3]">All content</h2>
+                        <span className="text-[12px] font-sans text-[#6B6B72] italic">*The stats calculated in this month</span>
+                    </div>
+                    <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] overflow-x-auto">
+                        <table className="w-full min-w-[700px] text-left border-collapse">
+                            <thead>
+                                <tr>
+                                    <th className="bg-transparent border-b border-[#2A2A2E] p-[16px] px-[24px] font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] w-[30%] font-normal">Title</th>
+                                    <th className="bg-transparent border-b border-[#2A2A2E] p-[16px] px-[24px] font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] w-[14%] font-normal">Pipeline</th>
+                                    <th className="bg-transparent border-b border-[#2A2A2E] p-[16px] px-[24px] font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] w-[18%] font-normal">Traffic trend</th>
+                                    <th className="bg-transparent border-b border-[#2A2A2E] p-[16px] px-[24px] font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] w-[10%] font-normal">Rank</th>
+                                    <th className="bg-transparent border-b border-[#2A2A2E] p-[16px] px-[24px] font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] w-[14%] font-normal">Writer</th>
+                                    <th className="bg-transparent border-b border-[#2A2A2E] p-[16px] px-[24px] font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] w-[14%] font-normal">Last updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="bg-transparent hover:bg-[#242428] border-b border-[#2A2A2E] transition-colors duration-250 ease-in-out cursor-pointer" onClick={() => onPostDetail(2)}>
+                                    <td className="p-[16px] px-[24px]"><span className="font-sans text-[14px] text-[#F2F2F3] line-clamp-1">How to build a B2B content calendar</span></td>
+                                    <td className="p-[16px] px-[24px]"><div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[11px] font-mono uppercase tracking-wider text-[#56DAB0] bg-[#56DAB0]/15"><div className="w-1.5 h-1.5 rounded-full bg-[#56DAB0]" /> Strong</div></td>
+                                    <td className="p-[16px] px-[24px]"><div className="flex items-center gap-1.5 font-mono text-[13px] text-[#56DAB0] normal-case whitespace-nowrap"><Icon name="trending_up" size={16} /> +12%</div></td>
+                                    <td className="p-[16px] px-[24px] font-mono text-[13px] text-[#9B9BA4] normal-case">#3</td>
+                                    <td className="p-[16px] px-[24px]"><div className="flex items-center gap-2 w-fit"><div className="w-[32px] h-[32px] rounded-full overflow-hidden shrink-0 border border-[#6B6B72]/30"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jamie" alt="avatar" /></div><span className="font-sans text-[12px] text-[#F2F2F3] font-medium">Jamie D.</span></div></td>
+                                    <td className="p-[16px] px-[24px] font-mono text-[12px] text-[#6B6B72] normal-case">Oct 14, 2024</td>
+                                </tr>
+                                <tr className="bg-transparent hover:bg-[#242428] border-b border-[#2A2A2E] transition-colors duration-250 ease-in-out cursor-pointer" onClick={() => onPostDetail(4)}>
+                                    <td className="p-[16px] px-[24px]"><span className="font-sans text-[14px] text-[#F2F2F3] line-clamp-1">Content distribution checklist for B2B teams</span></td>
+                                    <td className="p-[16px] px-[24px]"><div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[11px] font-mono uppercase tracking-wider text-[#56DAB0] bg-[#56DAB0]/15"><div className="w-1.5 h-1.5 rounded-full bg-[#56DAB0]" /> Strong</div></td>
+                                    <td className="p-[16px] px-[24px]"><div className="flex items-center gap-1.5 font-mono text-[13px] text-[#4DCBFD] normal-case whitespace-nowrap"><Icon name="trending_flat" size={16} /> Stable</div></td>
+                                    <td className="p-[16px] px-[24px] font-mono text-[13px] text-[#9B9BA4] normal-case">#5</td>
+                                    <td className="p-[16px] px-[24px]"><div className="flex items-center gap-2 w-fit"><div className="w-[32px] h-[32px] rounded-full overflow-hidden shrink-0 border border-[#6B6B72]/30"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jamie" alt="avatar" /></div><span className="font-sans text-[12px] text-[#F2F2F3] font-medium">Jamie D.</span></div></td>
+                                    <td className="p-[16px] px-[24px] font-mono text-[12px] text-[#6B6B72] normal-case">Sep 3, 2024</td>
+                                </tr>
+                                <tr className="bg-transparent hover:bg-[#242428] border-b border-[#2A2A2E] transition-colors duration-250 ease-in-out cursor-pointer" onClick={() => onPostDetail(1)}>
+                                    <td className="p-[16px] px-[24px]"><span className="font-sans text-[14px] text-[#F2F2F3] line-clamp-1">The complete guide to B2B email strategy</span></td>
+                                    <td className="p-[16px] px-[24px]"><div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[11px] font-mono uppercase tracking-wider text-[#E1454D] bg-[#E1454D]/15"><div className="w-1.5 h-1.5 rounded-full bg-[#E1454D]" /> Weak</div></td>
+                                    <td className="p-[16px] px-[24px]"><div className="flex items-center gap-1.5 font-mono text-[13px] text-[#E1454D] normal-case whitespace-nowrap"><Icon name="trending_down" size={16} /> -41%</div></td>
+                                    <td className="p-[16px] px-[24px] font-mono text-[13px] text-[#9B9BA4] normal-case">#9</td>
+                                    <td className="p-[16px] px-[24px]"><div className="flex items-center gap-2 w-fit"><div className="w-[32px] h-[32px] rounded-full overflow-hidden shrink-0 border border-[#6B6B72]/30"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jamie" alt="avatar" /></div><span className="font-sans text-[12px] text-[#F2F2F3] font-medium">Jamie D.</span></div></td>
+                                    <td className="p-[16px] px-[24px] font-mono text-[12px] text-[#6B6B72] normal-case">Oct 3, 2024</td>
+                                </tr>
+                                <tr className="bg-transparent hover:bg-[#242428] border-b-0 transition-colors duration-250 ease-in-out cursor-pointer" onClick={() => onPostDetail(3)}>
+                                    <td className="p-[16px] px-[24px]"><span className="font-sans text-[14px] text-[#F2F2F3] line-clamp-1">SaaS onboarding email sequences</span></td>
+                                    <td className="p-[16px] px-[24px]"><div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[8px] text-[11px] font-mono uppercase tracking-wider text-[#FFB349] bg-[#FFB349]/15"><div className="w-1.5 h-1.5 rounded-full bg-[#FFB349]" /> Moderate</div></td>
+                                    <td className="p-[16px] px-[24px]"><div className="flex items-center gap-1.5 font-mono text-[13px] text-[#E1454D] normal-case whitespace-nowrap"><Icon name="trending_down" size={16} /> -8%</div></td>
+                                    <td className="p-[16px] px-[24px] font-mono text-[13px] text-[#9B9BA4] normal-case">#7</td>
+                                    <td className="p-[16px] px-[24px]"><div className="flex items-center gap-2 w-fit"><div className="w-[32px] h-[32px] rounded-full overflow-hidden shrink-0 border border-[#6B6B72]/30"><img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="avatar" /></div><span className="font-sans text-[12px] text-[#F2F2F3] font-medium">Alex T.</span></div></td>
+                                    <td className="p-[16px] px-[24px] font-mono text-[12px] text-[#6B6B72] normal-case">Aug 28, 2024</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        );
+
+        // --- SETTINGS VIEW ---
+        const Settings = ({ role }) => {
+            const sectionRefs = {
+                account: useRef(null),
+                notifications: useRef(null),
+                integrations: useRef(null),
+                team: useRef(null),
+                thresholds: useRef(null),
+                workspace: useRef(null)
+            };
+            
+            const [activeSection, setActiveSection] = useState('account');
+            const [showToast, setShowToast] = useState(false);
+            const [showPassword, setShowPassword] = useState(false);
+
+            const defaultAccount = {
+                name: role === 'strategist' ? 'Sarah K.' : 'Jamie D.',
+                email: role === 'strategist' ? 'sarah@company.com' : 'jamie@company.com',
+            };
+            const defaultNotificationsWriter = { briefAssigned: true, publishedConfirmation: true, signalOnPosts: true };
+            const defaultNotificationsStrategist = { signalDetected: true, briefOpened: false, writerPublished: false, reportReady: true };
+            const defaultThresholds = { trafficDrop: '20', rankLoss: '3' };
+
+            const [accountForm, setAccountForm] = useState(defaultAccount);
+            const [passwordForm, setPasswordForm] = useState({ current: '', new: '', confirm: '' });
+            const [notifWriter, setNotifWriter] = useState(defaultNotificationsWriter);
+            const [notifStrategist, setNotifStrategist] = useState(defaultNotificationsStrategist);
+            const [thresholdsForm, setThresholdsForm] = useState(defaultThresholds);
+
+            const scrollToSection = (id) => {
+                setActiveSection(id);
+                sectionRefs[id].current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            };
+
+            useEffect(() => {
+                let timer;
+                if (showToast) {
+                    timer = setTimeout(() => setShowToast(false), 4000);
+                }
+                return () => clearTimeout(timer);
+            }, [showToast]);
+
+            const navItems = role === 'strategist' 
+                ? [
+                    { id: 'account', label: 'Account' },
+                    { id: 'notifications', label: 'Notifications' },
+                    { id: 'integrations', label: 'Integrations' },
+                    { id: 'team', label: 'Team' },
+                    { id: 'thresholds', label: 'Signal thresholds' },
+                    { id: 'workspace', label: 'Workspace' }
+                  ]
+                : [
+                    { id: 'account', label: 'Account' },
+                    { id: 'notifications', label: 'Notifications' },
+                    { id: 'workspace', label: 'Workspace' }
+                  ];
+
+            const SectionLabel = ({ text }) => (
+                <h2 className="font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.1em] mb-[16px]">{text}</h2>
+            );
+
+            const SaveDiscardRow = ({ onDiscard }) => (
+                <div className="flex justify-end gap-[12px] mt-[32px] pt-[20px] border-t border-[#2A2A2E]">
+                    <Button variant="secondary" onClick={onDiscard}>Discard changes</Button>
+                    <Button variant="primary" onClick={() => setShowToast(true)}>Save changes</Button>
+                </div>
+            );
+
+            const Toggle = ({ checked, onChange }) => (
+                <button 
+                    type="button"
+                    onClick={onChange}
+                    className={`w-[36px] h-[20px] rounded-full relative transition-colors duration-200 focus:outline-none flex items-center px-[2px] ${checked ? 'bg-[#FC632B]' : 'bg-[#2A2A2E]'}`}
+                >
+                    <div className={`w-[16px] h-[16px] bg-white rounded-full transition-transform duration-200 ${checked ? 'translate-x-[16px]' : 'translate-x-0'}`} />
+                </button>
+            );
+
+            return (
+                <div className="w-full max-w-[1100px] mx-auto pt-[40px] pb-[80px] animate-in fade-in flex flex-col">
+                    <h1 className="font-heading text-[32px] text-[#F2F2F3] mb-[40px]">Settings</h1>
+                    
+                    <div className="flex relative items-start">
+                        {/* Left Nav */}
+                        <div className="w-[220px] shrink-0 border-r border-[#2A2A2E] pr-[32px] sticky top-[104px] flex flex-col gap-[4px]">
+                            {navItems.map(item => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => scrollToSection(item.id)}
+                                    className={`text-left w-full transition-all duration-150 py-[8px] font-sans text-[14px] ${activeSection === item.id ? 'font-medium text-[#F2F2F3] border-l-[2px] border-[#FC632B] pl-[10px]' : 'text-[#6B6B72] hover:text-[#F2F2F3] pl-0 border-l-0'}`}
+                                >
+                                    {item.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Right Content */}
+                        <div className="flex-1 pl-[56px] flex flex-col">
+                            
+                            {/* Account */}
+                            <div ref={sectionRefs.account}>
+                                <SectionLabel text="ACCOUNT" />
+                                <div className="flex items-center gap-[16px] mb-[28px]">
+                                    <div className="w-[48px] h-[48px] rounded-full bg-[#242428] border border-[#2A2A2E] overflow-hidden shrink-0">
+                                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${role === 'strategist' ? 'Felix' : 'Jamie'}`} alt="avatar" className="w-full h-full object-cover" />
+                                    </div>
+                                    <button className="font-sans font-medium text-[13px] text-[#9B9BA4] hover:text-[#F2F2F3] transition-colors duration-150">Update photo</button>
+                                </div>
+                                <div className="flex flex-col gap-[16px]">
+                                    <div className="flex flex-col">
+                                        <label className="font-mono text-[10px] text-[#6B6B72] uppercase mb-[6px]">Full name</label>
+                                        <input type="text" value={accountForm.name} onChange={e => setAccountForm({...accountForm, name: e.target.value})} className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <label className="font-mono text-[10px] text-[#6B6B72] uppercase mb-[6px]">Email address</label>
+                                        <input type="email" value={accountForm.email} onChange={e => setAccountForm({...accountForm, email: e.target.value})} className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors" />
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <label className="font-mono text-[10px] text-[#6B6B72] uppercase mb-[6px]">Role</label>
+                                        <div className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#6B6B72] flex justify-between items-center">
+                                            {role === 'strategist' ? 'Strategist' : 'Writer'}
+                                            <span className="font-mono text-[10px] text-[#6B6B72] uppercase">Read only</span>
+                                        </div>
+                                        <button onClick={() => setShowPassword(!showPassword)} className="w-fit font-sans font-medium text-[13px] text-[#9B9BA4] hover:text-[#F2F2F3] transition-colors duration-150 mt-[8px]">Change password</button>
+                                    </div>
+                                    {showPassword && (
+                                        <div className="flex flex-col gap-[16px]">
+                                            <div className="flex flex-col">
+                                                <label className="font-mono text-[10px] text-[#6B6B72] uppercase mb-[6px]">Current password</label>
+                                                <input type="password" value={passwordForm.current} onChange={e => setPasswordForm({...passwordForm, current: e.target.value})} className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <label className="font-mono text-[10px] text-[#6B6B72] uppercase mb-[6px]">New password</label>
+                                                <input type="password" value={passwordForm.new} onChange={e => setPasswordForm({...passwordForm, new: e.target.value})} className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors" />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <label className="font-mono text-[10px] text-[#6B6B72] uppercase mb-[6px]">Confirm new password</label>
+                                                <input type="password" value={passwordForm.confirm} onChange={e => setPasswordForm({...passwordForm, confirm: e.target.value})} className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors" />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <SaveDiscardRow onDiscard={() => { setAccountForm(defaultAccount); setShowPassword(false); setPasswordForm({ current: '', new: '', confirm: '' }); }} />
+                            </div>
+
+                            {/* Notifications */}
+                            <div ref={sectionRefs.notifications} className="mt-[48px]">
+                                <SectionLabel text="NOTIFICATIONS" />
+                                <div className="flex flex-col">
+                                    {role === 'writer' ? (
+                                        <>
+                                            <div className="flex justify-between items-center py-[14px] border-b border-[#2A2A2E]">
+                                                <div>
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Brief assigned</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a strategist sends you a new brief</div>
+                                                </div>
+                                                <Toggle checked={notifWriter.briefAssigned} onChange={() => setNotifWriter({...notifWriter, briefAssigned: !notifWriter.briefAssigned})} />
+                                            </div>
+                                            <div className="flex justify-between items-center py-[14px] border-b border-[#2A2A2E]">
+                                                <div>
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Published confirmation</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When your post goes live and tracking starts</div>
+                                                </div>
+                                                <Toggle checked={notifWriter.publishedConfirmation} onChange={() => setNotifWriter({...notifWriter, publishedConfirmation: !notifWriter.publishedConfirmation})} />
+                                            </div>
+                                            <div className="flex justify-between items-center py-[14px]">
+                                                <div>
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Signal on your posts</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a post you wrote gets flagged</div>
+                                                </div>
+                                                <Toggle checked={notifWriter.signalOnPosts} onChange={() => setNotifWriter({...notifWriter, signalOnPosts: !notifWriter.signalOnPosts})} />
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div className="flex justify-between items-center py-[14px] border-b border-[#2A2A2E]">
+                                                <div>
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Signal detected</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When any tracked post crosses a signal threshold</div>
+                                                </div>
+                                                <Toggle checked={notifStrategist.signalDetected} onChange={() => setNotifStrategist({...notifStrategist, signalDetected: !notifStrategist.signalDetected})} />
+                                            </div>
+                                            <div className="flex justify-between items-center py-[14px] border-b border-[#2A2A2E]">
+                                                <div>
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Brief opened</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a writer opens a brief you assigned</div>
+                                                </div>
+                                                <Toggle checked={notifStrategist.briefOpened} onChange={() => setNotifStrategist({...notifStrategist, briefOpened: !notifStrategist.briefOpened})} />
+                                            </div>
+                                            <div className="flex justify-between items-center py-[14px] border-b border-[#2A2A2E]">
+                                                <div>
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Writer published</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a writer publishes a piece</div>
+                                                </div>
+                                                <Toggle checked={notifStrategist.writerPublished} onChange={() => setNotifStrategist({...notifStrategist, writerPublished: !notifStrategist.writerPublished})} />
+                                            </div>
+                                            <div className="flex justify-between items-center py-[14px]">
+                                                <div>
+                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Report ready</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">When a monthly report is auto-generated</div>
+                                                </div>
+                                                <Toggle checked={notifStrategist.reportReady} onChange={() => setNotifStrategist({...notifStrategist, reportReady: !notifStrategist.reportReady})} />
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                                <SaveDiscardRow onDiscard={() => role === 'writer' ? setNotifWriter(defaultNotificationsWriter) : setNotifStrategist(defaultNotificationsStrategist)} />
+                            </div>
+
+                            {/* Integrations (Strategist Only) */}
+                            {role === 'strategist' && (
+                                <div ref={sectionRefs.integrations} className="mt-[48px]">
+                                    <SectionLabel text="INTEGRATIONS" />
+                                    <div className="grid grid-cols-2 gap-[12px]">
+                                        {/* GA */}
+                                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[20px] px-[24px] flex justify-between items-center hover:bg-[#242428] transition-colors duration-200">
+                                            <div className="flex items-center">
+                                                <Icon name="language" size={16} className="text-[#9B9BA4]" />
+                                                <div className="ml-[12px]">
+                                                    <div className="font-sans font-medium text-[15px] text-[#F2F2F3]">Google Analytics</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[3px]">workspace@company.com</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-[4px]">
+                                                <span className="font-mono text-[10px] text-[#56DAB0] bg-[#56DAB0]/15 rounded-[6px] px-[8px] py-[2px] uppercase">Active</span>
+                                                <button className="font-sans font-medium text-[13px] text-[#6B6B72] hover:text-[#FF4949] transition-colors">Disconnect</button>
+                                            </div>
+                                        </div>
+                                        {/* Search Console */}
+                                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[20px] px-[24px] flex justify-between items-center hover:bg-[#242428] transition-colors duration-200">
+                                            <div className="flex items-center">
+                                                <Icon name="search" size={16} className="text-[#9B9BA4]" />
+                                                <div className="ml-[12px]">
+                                                    <div className="font-sans font-medium text-[15px] text-[#F2F2F3]">Search Console</div>
+                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[3px]">company.com</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-[4px]">
+                                                <span className="font-mono text-[10px] text-[#56DAB0] bg-[#56DAB0]/15 rounded-[6px] px-[8px] py-[2px] uppercase">Active</span>
+                                                <button className="font-sans font-medium text-[13px] text-[#6B6B72] hover:text-[#FF4949] transition-colors">Disconnect</button>
+                                            </div>
+                                        </div>
+                                        {/* CRM */}
+                                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[20px] px-[24px] flex justify-between items-center hover:bg-[#242428] transition-colors duration-200">
+                                            <div className="flex items-center">
+                                                <Icon name="hub" size={16} className="text-[#9B9BA4]" />
+                                                <div className="ml-[12px]">
+                                                    <div className="font-sans font-medium text-[15px] text-[#F2F2F3]">CRM</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-[4px]">
+                                                <span className="font-mono text-[10px] text-[#6B6B72] bg-transparent border border-dashed border-[#2A2A2E] rounded-[6px] px-[8px] py-[2px] uppercase">Not connected</span>
+                                                <button className="font-sans font-medium text-[13px] text-[#FC632B] hover:underline">Connect</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="font-sans text-[13px] text-[#6B6B72] mt-[16px]">To connect or remove an integration, contact your admin.</p>
+                                </div>
+                            )}
+
+                            {/* Team (Strategist Only) */}
+                            {role === 'strategist' && (
+                                <div ref={sectionRefs.team} className="mt-[48px]">
+                                    <SectionLabel text="TEAM ACCESS" />
+                                    <div className="flex flex-col">
+                                        <div className="flex justify-between items-center py-[16px] border-b border-[#2A2A2E]">
+                                            <div className="flex items-center">
+                                                <div className="w-[32px] h-[32px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center font-sans font-medium text-[13px] text-[#9B9BA4]">J</div>
+                                                <div className="font-sans font-medium text-[14px] text-[#F2F2F3] ml-[12px]">Jamie D.</div>
+                                            </div>
+                                            <Icon name="more_horiz" size={20} className="text-[#6B6B72] hover:text-[#F2F2F3] cursor-pointer transition-colors duration-150" />
+                                        </div>
+                                        <div className="flex justify-between items-center py-[16px]">
+                                            <div className="flex items-center">
+                                                <div className="w-[32px] h-[32px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center font-sans font-medium text-[13px] text-[#9B9BA4]">A</div>
+                                                <div className="font-sans font-medium text-[14px] text-[#F2F2F3] ml-[12px]">Alex T.</div>
+                                            </div>
+                                            <Icon name="more_horiz" size={20} className="text-[#6B6B72] hover:text-[#F2F2F3] cursor-pointer transition-colors duration-150" />
+                                        </div>
+                                    </div>
+                                    <p className="font-sans text-[13px] text-[#6B6B72] mt-[16px]">To add or remove team members, contact your admin.</p>
+                                </div>
+                            )}
+
+                            {/* Thresholds (Strategist Only) */}
+                            {role === 'strategist' && (
+                                <div ref={sectionRefs.thresholds} className="mt-[48px]">
+                                    <SectionLabel text="SIGNAL THRESHOLDS" />
+                                    <div className="flex flex-col">
+                                        <div className="flex justify-between items-center py-[16px] border-b border-[#2A2A2E]">
+                                            <div>
+                                                <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Traffic drop</div>
+                                                <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">Flag when organic traffic falls significantly</div>
+                                            </div>
+                                            <div className="font-sans text-[13px] text-[#9B9BA4] flex items-center gap-[6px]">
+                                                Flag when traffic drops more than
+                                                <input 
+                                                    type="text" 
+                                                    value={thresholdsForm.trafficDrop}
+                                                    onChange={e => setThresholdsForm({...thresholdsForm, trafficDrop: e.target.value})}
+                                                    className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] w-[52px] py-[6px] px-[10px] text-center focus:outline-none focus:border-[#FC632B]/50 transition-colors duration-150 font-sans text-[14px] text-[#F2F2F3]"
+                                                />
+                                                % over 30 days
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between items-center py-[16px]">
+                                            <div>
+                                                <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Rank loss</div>
+                                                <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">Flag when search ranking falls</div>
+                                            </div>
+                                            <div className="font-sans text-[13px] text-[#9B9BA4] flex items-center gap-[6px]">
+                                                Flag when rank drops more than
+                                                <input 
+                                                    type="text" 
+                                                    value={thresholdsForm.rankLoss}
+                                                    onChange={e => setThresholdsForm({...thresholdsForm, rankLoss: e.target.value})}
+                                                    className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] w-[52px] py-[6px] px-[10px] text-center focus:outline-none focus:border-[#FC632B]/50 transition-colors duration-150 font-sans text-[14px] text-[#F2F2F3]"
+                                                />
+                                                positions
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <SaveDiscardRow onDiscard={() => setThresholdsForm(defaultThresholds)} />
+                                </div>
+                            )}
+
+                            {/* Workspace */}
+                            <div ref={sectionRefs.workspace} className="mt-[48px]">
+                                <SectionLabel text="WORKSPACE" />
+                                <div className="flex flex-col gap-[16px]">
+                                    <div className="flex flex-col">
+                                        <label className="font-mono text-[10px] text-[#6B6B72] uppercase mb-[6px]">Workspace name</label>
+                                        <div className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#6B6B72] flex justify-between items-center">
+                                            Company Workspace
+                                            <span className="font-mono text-[10px] text-[#6B6B72] uppercase">Read only</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <label className="font-mono text-[10px] text-[#6B6B72] uppercase mb-[6px]">Plan</label>
+                                        <div className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#6B6B72] flex justify-between items-center">
+                                            Growth plan
+                                            <span className="font-mono text-[10px] text-[#56DAB0] bg-[#56DAB0]/15 rounded-[6px] px-[8px] py-[2px] uppercase">Active</span>
+                                        </div>
+                                    </div>
+                                    {role === 'strategist' && (
+                                        <div className="flex flex-col">
+                                            <label className="font-mono text-[10px] text-[#6B6B72] uppercase mb-[6px]">Admin contact</label>
+                                            <div className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#6B6B72] flex justify-between items-center">
+                                                admin@company.com
+                                                <span className="font-mono text-[10px] text-[#6B6B72] uppercase">Read only</span>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                                <p className="font-sans text-[13px] text-[#6B6B72] mt-[16px]">To change workspace settings or manage billing, contact your admin.</p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    {showToast && ReactDOM.createPortal(
+                        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] bg-[#242428] border border-[#2A2A2E] rounded-full px-5 py-2.5 animate-in slide-in-from-bottom-5 duration-300">
+                            <span className="text-[14px] text-[#F2F2F3] font-sans whitespace-nowrap">Changes saved</span>
+                        </div>,
+                        document.body
+                    )}
+                </div>
+            );
+        };
+
+        // --- MAIN APP COMPONENT ---
+
+        function App() {
+            const [route, setRoute] = useState('login'); 
+            const [role, setRole] = useState('strategist');
+            const [routeContext, setRouteContext] = useState(null);
+            const [notificationsOpen, setNotificationsOpen] = useState(false);
+            const [unread, setUnread] = useState(true);
+            const [nestedArticle, setNestedArticle] = useState(null);
+            const [selectedAction, setSelectedAction] = useState('refresh');
+            const [isBriefSent, setIsBriefSent] = useState(false);
+            const [showSignalToast, setShowSignalToast] = useState(false);
+            const [briefNote, setBriefNote] = useState("Update the existing guide to include a dedicated section on AI-driven sequence personalization. Focus on reclaiming the featured snippet from EmailFlow.io by addressing the 'AI Automation' gap identified in our analysis.");
+            const relatedScrollRef = useRef(null);
+
+            useEffect(() => {
+                let timer;
+                if (showSignalToast) {
+                    timer = setTimeout(() => {
+                        setShowSignalToast(false);
+                    }, 4000);
+                }
+                return () => clearTimeout(timer);
+            }, [showSignalToast]);
+
+            const getActiveTab = () => {
+                if (['signals', 'detail', 'reports'].includes(route)) return 'signals';
+                if (['produce', 'brief', 'editor'].includes(route)) return 'produce';
+                return null; 
+            };
+
+            const activeTab = getActiveTab();
+
+            const handleRouteChange = (newRoute, context = null) => {
+                setRoute(newRoute);
+                setRouteContext(context);
+                setNotificationsOpen(false);
+                setNestedArticle(null);
+                setSelectedAction(newRoute === 'detail' ? 'refresh' : null);
+                setIsBriefSent(false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            if (route === 'login') {
+                return <LoginScreen onLogin={(targetRoute) => {
+                    if (targetRoute === 'signals') setRole('strategist');
+                    else setRole('writer');
+                    handleRouteChange(targetRoute);
+                }} />;
+            }
+
+            return (
+                <div className="min-h-screen">
+                    <Layout 
+                        activeTab={activeTab} 
+                        setRoute={handleRouteChange} 
+                        toggleNotifications={() => { setNotificationsOpen(!notificationsOpen); setUnread(false); }}
+                        hasUnread={unread}
+                    >
+                        {route === 'signals' && <SignalsHome onPostDetail={() => handleRouteChange('detail')} onReports={() => handleRouteChange('reports')} />}
+                        {route === 'produce' && <ProduceHome onOpenBrief={(source) => handleRouteChange('brief', { source })} />}
+                        {route === 'settings' && <Settings role={role} />}
+                        
+                        {route === 'reports' && (
+                            <ReportsHome 
+                                onBack={() => handleRouteChange('signals')} 
+                                onPostDetail={(id) => handleRouteChange('detail', { id })} 
+                            />
+                        )}
+                        {route === 'detail' && (
+                            <div className="max-w-6xl mx-auto animate-in fade-in pb-20">
+                                <div className="flex justify-between items-start mb-8">
+                                    <button onClick={() => handleRouteChange('signals')} className="text-[#6B6B72] flex items-center gap-1 hover:text-white transition-colors"><Icon name="chevron_left" size={18} /> Back to dashboard</button>
+                                </div>
+                                <div className="flex justify-between items-center mb-2">
+                                    <h1 className="text-3xl font-heading text-[#F2F2F3]">B2B email strategy guide</h1>
+                                    <a href="#" target="_blank" className="text-sm font-medium text-[#9B9BA4] hover:text-[#FC632B] flex items-center gap-1.5 transition-colors shrink-0">
+                                        <Icon name="open_in_new" size={16} /> View post
+                                    </a>
+                                </div>
+                                <p className="text-[#9B9BA4] mb-10">Detailed signal analysis for the last 30 days</p>
+                                
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10 items-stretch">
+                                    <div className="bg-[#1A1A1E] border border-[#2A2A2E] p-[24px] rounded-[16px] flex flex-col">
+                                        <h3 className="font-mono text-[11px] text-[#6B6B72] uppercase tracking-[0.05em] mb-[20px]">Organic traffic - last 90 days</h3>
+                                        <div className="w-full min-h-[220px]">
+                                            <ResponsiveContainer width="100%" height={220}>
+                                                <LineChart data={chartData} margin={{ top: 28, right: 12, bottom: 0, left: 0 }}>
+                                                    <CartesianGrid vertical={false} stroke="#2A2A2E" strokeDasharray="4 4" />
+                                                    <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={10} tick={{ fill: "#6B6B72", fontSize: 11, fontFamily: "DM Mono" }} tickFormatter={(value) => value.replace(/[0-9]/g, "")} />
+                                                    <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: '#2A2A2E', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                                                    <ReferenceLine x="Oct2" stroke="#FF4949" strokeDasharray="3 3" strokeWidth={1.5} label={{ value: "Competitor post published Oct 18", position: "top", fill: "#FF4949", fontSize: 11, fontFamily: "DM Sans", dy: -8 }} />
+                                                    <Line type="monotone" dataKey="traffic" stroke="#FC632B" strokeWidth={2.5} dot={false} activeDot={{ r: 5, fill: "#FC632B", stroke: "#0E0E10", strokeWidth: 2 }} />
+                                                </LineChart>
+                                            </ResponsiveContainer>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-6">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="bg-[#242428] border border-[#2A2A2E] rounded-[12px] p-[20px] flex flex-col gap-[6px]">
+                                                <div className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.05em]">Rank change</div>
+                                                <div className="font-heading text-[22px] text-[#FF4949] font-medium leading-none">#4 &rarr; #9</div>
+                                                <div className="font-sans text-[12px] text-[#9B9BA4]">Lost 5 positions in 3 weeks</div>
+                                            </div>
+                                            <div className="bg-[#242428] border border-[#2A2A2E] rounded-[12px] p-[20px] flex flex-col gap-[6px]">
+                                                <div className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.05em]">Traffic this month</div>
+                                                <div className="font-heading text-[22px] text-[#FF4949] font-medium leading-none">-41%</div>
+                                                <div className="font-sans text-[12px] text-[#9B9BA4]">1,840 &rarr; 1,090 visits / month</div>
+                                            </div>
+                                        </div>
+                                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] p-[24px] rounded-[16px] flex-1">
+                                            <div className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.05em] mb-[10px]">What changed</div>
+                                            <p className="font-sans text-[13px] text-[#9B9BA4] leading-[1.7]">
+                                                A competitor published a more detailed guide on October 18 targeting the same primary keyword. Their post covers AI writing tools and automation workflows - two topics this post does not address. Search intent has shifted and this post no longer fully matches it.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-[#4DCBFD]/10 border border-[#4DCBFD]/30 p-[24px] rounded-[16px] flex flex-col">
+                                        <h3 className="font-heading text-xl mb-6 text-[#4DCBFD] flex items-center gap-2"><Icon name="lightbulb" size={24} /> AI Conclusion</h3>
+                                        <div className="space-y-4 text-[15px] text-[#F2F2F3] leading-relaxed">
+                                            <p>Your content has lost <span className="text-[#4DCBFD] font-medium">"Featured Snippet"</span> status for the primary keyword.</p>
+                                            <p>Competitor <span className="text-white italic underline underline-offset-4 decoration-[#4DCBFD]/50">"EmailFlow.io"</span> updated their guide recently with a new section on AI automation.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col gap-[24px]">
+                                    <h2 className="text-[20px] font-heading text-[#F2F2F3]">Action to take</h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[16px]">
+                                        <div className={`relative cursor-pointer transition-all duration-200 ease-in-out p-5 rounded-[12px] flex flex-col ${selectedAction === 'refresh' ? 'bg-[#242428] border-[1.5px] border-[#FC632B]' : 'bg-[#1A1A1E] border border-[#2A2A2E] hover:bg-[#242428]'}`} onClick={() => setSelectedAction(selectedAction === 'refresh' ? null : 'refresh')}>
+                                            <div className="absolute top-4 right-4 bg-[#FC632B] text-white text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-[8px]">Recommended</div>
+                                            <div className="font-heading text-[16px] mb-2 text-[#F2F2F3]">Refresh</div>
+                                            <p className="text-[13px] text-[#9B9BA4] font-sans mb-6">Update existing guide with AI automation section to close content gap.</p>
+                                            <div className="flex flex-col mt-auto">
+                                                <div className="flex items-center gap-1.5 text-[12px] font-sans font-medium text-[#56DAB0] mb-3"><Icon name="check" size={14} /> Medium effort - High impact</div>
+                                                <div className="flex flex-col gap-1 text-[12px]"><span className="font-sans text-[#6B6B72]">Expected</span><span className="text-[#F2F2F3] font-sans">Recover position 4-6 within 60 days</span></div>
+                                            </div>
+                                        </div>
+                                        <div className={`relative cursor-pointer transition-all duration-150 ease-in-out p-5 rounded-[12px] flex flex-col ${selectedAction === 'expand' ? 'bg-[#242428] border-[1.5px] border-[#FC632B]' : 'bg-[#1A1A1E] border border-[#2A2A2E] hover:bg-[#242428]'}`} onClick={() => setSelectedAction(selectedAction === 'expand' ? null : 'expand')}>
+                                            {selectedAction === 'expand' && <div className="absolute top-4 right-4 text-[#FC632B]"><Icon name="check" size={16} /></div>}
+                                            <div className="font-heading text-[16px] mb-2 text-[#F2F2F3]">Expand</div>
+                                            <p className="text-[13px] text-[#9B9BA4] font-sans mb-6">Create a new cluster post specifically focused on AI tools for email marketing.</p>
+                                            <div className="flex flex-col mt-auto">
+                                                <div className="flex items-center gap-1.5 text-[12px] font-sans font-medium text-[#FFB349] mb-3">Medium effort - Moderate impact</div>
+                                                <div className="flex flex-col gap-1 text-[12px]"><span className="font-sans text-[#6B6B72]">Expected</span><span className="text-[#F2F2F3] font-sans">Capture net-new long-tail traffic</span></div>
+                                            </div>
+                                        </div>
+                                        <div className={`relative cursor-pointer transition-all duration-150 ease-in-out p-5 rounded-[12px] flex flex-col ${selectedAction === 'retire' ? 'bg-[#242428] border-[1.5px] border-[#FC632B]' : 'bg-[#1A1A1E] border border-[#2A2A2E] hover:bg-[#242428]'}`} onClick={() => setSelectedAction(selectedAction === 'retire' ? null : 'retire')}>
+                                            {selectedAction === 'retire' && <div className="absolute top-4 right-4 text-[#FC632B]"><Icon name="check" size={16} /></div>}
+                                            <div className="font-heading text-[16px] mb-2 text-[#F2F2F3]">Retire</div>
+                                            <p className="text-[13px] text-[#9B9BA4] font-sans mb-6">Unpublish post and redirect URL to the main marketing hub.</p>
+                                            <div className="flex flex-col mt-auto">
+                                                <div className="flex items-center gap-1.5 text-[12px] font-sans font-medium text-[#E1454D] mb-3"><Icon name="close" size={14} /> Low effort - Low impact</div>
+                                                <div className="flex flex-col gap-1 text-[12px]"><span className="font-sans text-[#6B6B72]">Expected</span><span className="text-[#F2F2F3] font-sans">Consolidate authority to hub page</span></div>
+                                            </div>
+                                        </div>
+                                        <div className={`relative cursor-pointer transition-all duration-150 ease-in-out p-5 rounded-[12px] flex flex-col ${selectedAction === 'repurpose' ? 'bg-[#242428] border-[1.5px] border-[#FC632B]' : 'bg-[#1A1A1E] border border-[#2A2A2E] hover:bg-[#242428]'}`} onClick={() => setSelectedAction(selectedAction === 'repurpose' ? null : 'repurpose')}>
+                                            {selectedAction === 'repurpose' && <div className="absolute top-4 right-4 text-[#FC632B]"><Icon name="check" size={16} /></div>}
+                                            <div className="font-heading text-[16px] mb-2 text-[#F2F2F3]">Repurpose</div>
+                                            <p className="text-[13px] text-[#9B9BA4] font-sans mb-6">Turn existing tips into a 5-part LinkedIn carousel series.</p>
+                                            <div className="flex flex-col mt-auto">
+                                                <div className="flex items-center gap-1.5 text-[12px] font-sans font-medium text-[#FFB349] mb-3">High effort - Moderate impact</div>
+                                                <div className="flex flex-col gap-1 text-[12px]"><span className="font-sans text-[#6B6B72]">Expected</span><span className="text-[#F2F2F3] font-sans">Drive social engagement & traffic</span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex flex-col gap-2 mt-2 animate-in fade-in duration-300">
+                                        <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider flex items-center gap-1.5"><Icon name="edit_note" size={16} /> Note for writer (optional)</label>
+                                        <textarea className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-4 text-[#F2F2F3] text-[14px] focus:outline-none focus:border-[#FC632B]/50 transition-colors w-full resize-none min-h-[100px] font-sans" placeholder="Add specific instructions or context for the writer..." value={briefNote} onChange={(e) => setBriefNote(e.target.value)} disabled={!selectedAction || isBriefSent} />
+                                    </div>
+
+                                    <div className="mt-4">
+                                        {isBriefSent ? (
+                                            <div className="text-[14px] text-[#56DAB0] font-sans font-medium transition-all duration-250 ease-in-out flex items-center justify-end"><span>Brief sent to Jamie D. — this post is now marked as In progress.</span></div>
+                                        ) : (
+                                            <div className="flex items-center justify-end">
+                                                <div className="flex items-center gap-[16px]">
+                                                    <Button variant="secondary" onClick={() => { setShowSignalToast(true); handleRouteChange('signals'); }}>Dismiss signal</Button>
+                                                    <Button disabled={!selectedAction} onClick={() => setIsBriefSent(true)} className={`transition-all duration-200 ${!selectedAction ? 'opacity-40' : 'opacity-100'}`}>Send brief to Jamie D. &rarr;</Button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {route === 'brief' && (
+                            <div className="w-full max-w-6xl mx-auto animate-in fade-in pb-20">
+                                <button onClick={() => handleRouteChange('produce')} className="text-[#6B6B72] mb-8 flex items-center gap-1 hover:text-white transition-colors"><Icon name="chevron_left" size={18} /> Back</button>
+                                <h1 className="text-3xl font-heading mb-8 text-[#F2F2F3]">Brief: B2B Email Strategy Refresh</h1>
+                                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                                    <div className="lg:col-span-5 relative overflow-hidden flex flex-col">
+                                        <div className="flex flex-col gap-8 flex-1">
+                                            <div>
+                                                <div className="text-[12px] font-sans font-medium text-[#6B6B72] uppercase tracking-wider mb-4">What worked</div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+                                                    <div className="bg-[#242428] border border-[#2A2A2E] rounded-[12px] p-4 flex flex-col gap-2 h-full">
+                                                        <div className="flex items-center gap-2"><Icon name="trending_up" size={16} className="text-[#56DAB0]" /><span className="font-medium text-[14px] text-[#F2F2F3] font-sans">Top performing angle</span></div>
+                                                        <p className="text-[14px] text-[#9B9BA4] font-sans leading-relaxed">Direct response copywriting examples significantly increased time-on-page.</p>
+                                                        <div className="text-[12px] font-mono text-[#56DAB0] mt-auto pt-1">2.4x Higher Than Avg</div>
+                                                    </div>
+                                                    <div className="bg-[#242428] border border-[#2A2A2E] rounded-[12px] p-4 flex flex-col gap-2 h-full">
+                                                        <div className="flex items-center gap-2"><Icon name="my_location" size={16} className="text-[#56DAB0]" /><span className="font-medium text-[14px] text-[#F2F2F3] font-sans">Audience engagement signal</span></div>
+                                                        <p className="text-[14px] text-[#9B9BA4] font-sans leading-relaxed">Readers consistently clicked through to the advanced segmentation templates.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[12px] font-sans font-medium text-[#6B6B72] uppercase tracking-wider mb-4">What to avoid</div>
+                                                <div className="bg-[#242428] border border-[#2A2A2E] rounded-[12px] p-4 flex flex-col gap-2">
+                                                    <div className="flex items-center gap-2"><Icon name="warning" size={16} className="text-[#FFDE4D]" /><span className="font-medium text-[14px] text-[#F2F2F3] font-sans">Drop-off pattern</span></div>
+                                                    <p className="text-[14px] text-[#9B9BA4] font-sans leading-relaxed">High exit rates on generic tool feature lists. Keep focus on strategy implementation.</p>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-[12px] font-sans font-medium text-[#6B6B72] uppercase tracking-wider mb-4">Suggested direction</div>
+                                                <div className="bg-[#4DCBFD]/10 border border-[#4DCBFD]/30 rounded-[12px] p-5 flex flex-col gap-2">
+                                                    <div className="flex items-center gap-2 text-[#4DCBFD] text-[15px] font-medium font-sans"><Icon name="lightbulb" size={18} /> Recommended angle</div>
+                                                    <p className="text-[#F2F2F3] text-[15px] font-sans leading-relaxed">Double down on automated sequences triggered by product-led actions, backed by data.</p>
+                                                </div>
+                                            </div>
+                                            <div className="mt-auto pt-4 overflow-hidden">
+                                                <div className="flex items-center justify-between mb-4">
+                                                    <div className="text-[12px] font-sans font-medium text-[#6B6B72] uppercase tracking-wider">Related pieces you've published</div>
+                                                    <div className="flex items-center gap-1.5 shrink-0">
+                                                        <button onClick={() => relatedScrollRef.current?.scrollBy({left: -200, behavior: 'smooth'})} className="w-[20px] h-[20px] flex items-center justify-center rounded-[4px] border border-[#2A2A2E] bg-transparent text-[#6B6B72] hover:text-[#F2F2F3] hover:bg-[#242428] transition-colors"><Icon name="chevron_left" size={14} /></button>
+                                                        <button onClick={() => relatedScrollRef.current?.scrollBy({left: 200, behavior: 'smooth'})} className="w-[20px] h-[20px] flex items-center justify-center rounded-[4px] border border-[#2A2A2E] bg-transparent text-[#6B6B72] hover:text-[#F2F2F3] hover:bg-[#242428] transition-colors"><Icon name="chevron_right" size={14} /></button>
+                                                    </div>
+                                                </div>
+                                                <div ref={relatedScrollRef} className="flex gap-3 overflow-x-auto no-scrollbar pb-2 scroll-smooth">
+                                                    {['Automated Follow-ups', 'SaaS Onboarding Flow', 'Email Metrics Tracking', 'CRM Integration Guides', 'A/B Testing Subject Lines'].map(title => (
+                                                        <button key={title} onClick={() => setNestedArticle(title)} className="bg-[#242428] border border-[#2A2A2E] rounded-lg px-3 py-1.5 flex items-center gap-1.5 hover:border-[#FC632B]/50 transition-colors shrink-0">
+                                                            <Icon name="description" size={14} className="text-[#6B6B72]" />
+                                                            <span className="text-[12px] text-[#F2F2F3] font-sans whitespace-nowrap">{title}</span>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className={`absolute inset-0 bg-[#1A1A1E] z-10 p-8 sm:p-10 flex flex-col gap-4 transform transition-transform duration-350 ease-in-out ${nestedArticle ? 'translate-x-0' : 'translate-x-full'}`}>
+                                            <button onClick={() => setNestedArticle(null)} className="flex items-center gap-1.5 text-sm font-medium text-[#9B9BA4] hover:text-[#F2F2F3] transition-colors w-fit mb-4 shrink-0"><Icon name="arrow_back" size={16} /> Back to brief</button>
+                                            {nestedArticle && (
+                                                <div className="flex flex-col flex-1 overflow-hidden">
+                                                    <div className="text-[10px] font-mono text-[#6B6B72] uppercase mb-2 shrink-0">Read-only view</div>
+                                                    <h3 className="text-[20px] font-heading text-[#F2F2F3] mb-8 leading-snug shrink-0">{nestedArticle}</h3>
+                                                    <div className="space-y-6 max-w-2xl text-[15px] text-[#9B9BA4] font-sans leading-relaxed overflow-y-auto pr-4 pb-20 scrollbar-thin">
+                                                        {MOCK_ARTICLE_CONTENT[nestedArticle]?.map((paragraph, index) => <p key={index}>{paragraph}</p>) || <p>Content not available.</p>}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-7 flex flex-col gap-6">
+                                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] p-8 rounded-2xl shadow-2xl flex flex-col gap-6 flex-1">
+                                            <h2 className="text-[20px] font-heading text-[#F2F2F3]">Brief Details</h2>
+                                            {routeContext?.source === 'ready_to_write' && (
+                                                <div className="bg-[#242428]/50 border-l-2 border-[#6B6B72] p-5 rounded-r-xl mb-2">
+                                                    <div className="flex items-center gap-2 mb-2"><Icon name="person" size={14} className="text-[#9B9BA4]" /><h3 className="text-[12px] font-mono text-[#9B9BA4] uppercase tracking-widest font-bold">Note from Sarah K.</h3></div>
+                                                    <p className="text-[#F2F2F3] text-[14px] leading-relaxed">"{briefNote}"</p>
+                                                </div>
+                                            )}
+                                            <div className="flex flex-col gap-2">
+                                                <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Primary Keyword</label>
+                                                <input type="text" defaultValue="b2b email marketing" className="bg-[#242428] border border-[#2A2A2E] rounded-lg p-3 text-[#F2F2F3] text-sm focus:outline-none focus:border-[#FC632B]/50 transition-colors" />
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Target Audience</label>
+                                                <input type="text" defaultValue="Marketing Leads" className="bg-[#242428] border border-[#2A2A2E] rounded-lg p-3 text-[#F2F2F3] text-sm focus:outline-none focus:border-[#FC632B]/50 transition-colors" />
+                                            </div>
+                                            <div className="flex flex-col gap-2 flex-1">
+                                                <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider">Content Angle & Requirements</label>
+                                                <textarea className="bg-[#242428] border border-[#2A2A2E] rounded-lg p-3 text-[#F2F2F3] text-sm focus:outline-none focus:border-[#FC632B]/50 transition-colors flex-1 resize-none min-h-[150px]" defaultValue="Direct response focus for high-ticket SaaS. Integrate specific real-world examples of sequences. Must explicitly mention integration with popular CRMs." />
+                                            </div>
+                                            <Button onClick={() => handleRouteChange('editor')} className="py-4 mt-2">Start writing →</Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {route === 'editor' && (
+                            <EditorHome onBack={() => handleRouteChange('produce')} />
+                        )}
+                    </Layout>
+
+                    <div className={`fixed inset-0 bg-black/60 z-[110] transition-opacity duration-300 ${notificationsOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setNotificationsOpen(false)} />
+                    <div className={`fixed inset-y-0 right-0 w-[320px] max-w-[90vw] bg-[#1A1A1E] border-l border-[#2A2A2E] z-[120] transform transition-transform duration-350 ease-in-out shadow-2xl ${notificationsOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-full pointer-events-none'}`}>
+                        <div className="p-6 border-b border-[#2A2A2E] flex justify-between items-center bg-[#1A1A1E]/80 backdrop-blur-sm sticky top-0">
+                            <h2 className="font-heading text-lg text-[#F2F2F3]">Notifications</h2>
+                            <Icon name="close" size={20} className="text-[#6B6B72] cursor-pointer hover:text-[#F2F2F3] transition-colors" onClick={() => setNotificationsOpen(false)} />
+                        </div>
+                        <div className="p-4 space-y-3 overflow-y-auto max-h-[calc(100vh-80px)]">
+                            {NOTIFICATIONS.map(n => (
+                                <div key={n.id} className="p-4 rounded-xl bg-[#242428]/50 border border-[#2A2A2E] hover:border-[#FC632B]/50 hover:bg-[#242428] transition-all cursor-pointer group" onClick={() => handleRouteChange(n.type === 'brief' ? 'brief' : 'signals')}>
+                                    <div className="flex gap-3 items-start">
+                                        <div className="text-[#FC632B] mt-1 group-hover:scale-110 transition-transform">{n.icon}</div>
+                                        <div>
+                                            <div className="text-sm font-medium text-[#F2F2F3]">{n.title}</div>
+                                            <p className="text-xs text-[#9B9BA4] mt-1 line-clamp-2 leading-relaxed">{n.body}</p>
+                                            <div className="text-[10px] text-[#6B6B72] mt-3 font-mono uppercase tracking-widest">{n.time}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {showSignalToast && ReactDOM.createPortal(
+                        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] bg-[#242428] border border-[#2A2A2E] shadow-2xl rounded-full px-5 py-3 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-5 duration-300">
+                            <span className="text-sm text-[#F2F2F3] font-sans whitespace-nowrap">Signal dismissed</span>
+                            <span className="text-[#6B6B72]">&middot;</span>
+                            <button onClick={() => setShowSignalToast(false)} className="text-sm font-medium text-[#FC632B] hover:text-[#F2F2F3] transition-colors whitespace-nowrap focus:outline-none">Undo</button>
+                        </div>,
+                        document.body
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
