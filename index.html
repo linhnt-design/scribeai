@@ -89,6 +89,16 @@
             cursor: text;
         }
 
+        /* Autofill override for dark theme */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus, 
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px #242428 inset !important;
+            -webkit-text-fill-color: #F2F2F3 !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
         /* Editor Prose Styles */
         .prose-editor { outline: none; }
         .prose-editor h1 { font-family: 'Space Grotesk', sans-serif; font-size: 32px; color: #F2F2F3; margin-bottom: 24px; margin-top: 0; font-weight: 500; letter-spacing: -0.01em; }
@@ -487,9 +497,9 @@
                         setIsExiting(true);
                         // Trigger actual route change after exit animation completes
                         setTimeout(() => {
-                            if (email === 'strategist@company.com') {
+                            if (email.toLowerCase().includes('strategist')) {
                                 onLogin('signals');
-                            } else if (email === 'writer@company.com') {
+                            } else if (email.toLowerCase().includes('writer')) {
                                 onLogin('produce');
                             } else {
                                 onLogin('produce'); // Default fallback
@@ -648,9 +658,6 @@
                         <button type="button" className="relative cursor-pointer flex items-center justify-center w-8 h-8 bg-transparent hover:bg-[#242428] rounded-lg border-none p-0 outline-none group focus:outline-none transition-colors" onClick={toggleNotifications}>
                             <Icon name="notifications" size={20} className="text-[#9B9BA4] group-hover:text-white transition-colors pointer-events-none" />
                             {hasUnread && <div className="absolute top-1.5 right-1.5 w-[8px] h-[8px] bg-red-500 rounded-full border border-[#0E0E10] pointer-events-none" />}
-                        </button>
-                        <button type="button" className="cursor-pointer flex items-center justify-center w-8 h-8 bg-transparent hover:bg-[#242428] rounded-lg border-none p-0 outline-none group focus:outline-none transition-colors" onClick={() => setRoute('settings')}>
-                            <Icon name="settings" size={20} className="text-[#9B9BA4] group-hover:text-white transition-colors pointer-events-none" />
                         </button>
                         <button type="button"
                             className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-[#242428] border border-[#2A2A2E] overflow-hidden cursor-pointer hover:border-[#FC632B]/50 transition-colors flex items-center justify-center p-0 outline-none focus:outline-none ml-1 shrink-0"
@@ -1546,9 +1553,11 @@
         );
 
         // --- SETTINGS VIEW ---
-        const Settings = ({ role }) => {
+        const Settings = ({ role, onLogout }) => {
             const [activeSection, setActiveSection] = useState('account');
             const [showToast, setShowToast] = useState(false);
+            const [appToDisconnect, setAppToDisconnect] = useState(null);
+            const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
             // Default States
             const defaultAccount = { name: role === 'strategist' ? 'Sarah K.' : 'Jamie D.', email: role === 'strategist' ? 'sarah@company.com' : 'jamie@company.com' };
@@ -1561,11 +1570,15 @@
             // Form States
             const [accountForm, setAccountForm] = useState(defaultAccount);
             const [passwordForm, setPasswordForm] = useState(defaultPassword);
-            const [showPasswordFields, setShowPasswordFields] = useState(false);
             const [notifWriter, setNotifWriter] = useState(defaultNotificationsWriter);
             const [notifStrategist, setNotifStrategist] = useState(defaultNotificationsStrategist);
             const [prefsForm, setPrefsForm] = useState(defaultPrefs);
             const [thresholdsForm, setThresholdsForm] = useState(defaultThresholds);
+
+            // Password Visibility States
+            const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+            const [showNewPassword, setShowNewPassword] = useState(false);
+            const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
             // Toast Handler
             useEffect(() => {
@@ -1576,29 +1589,24 @@
                 return () => clearTimeout(timer);
             }, [showToast]);
 
-            const handleSave = () => {
+            const handleSaveAccount = () => {
                 setShowToast(true);
+                // Reset password form after successful save
+                setPasswordForm(defaultPassword);
             };
 
             const handleDiscardAccount = () => {
                 setAccountForm(defaultAccount);
                 setPasswordForm(defaultPassword);
-                setShowPasswordFields(false);
             };
 
-            const handleDiscardNotifications = () => {
-                if (role === 'writer') setNotifWriter(defaultNotificationsWriter);
-                else setNotifStrategist(defaultNotificationsStrategist);
-            };
-
-            const handleDiscardPrefs = () => setPrefsForm(defaultPrefs);
-            const handleDiscardThresholds = () => setThresholdsForm(defaultThresholds);
-
-            // Dirty Checks for Save/Discard visibility
-            const isAccountDirty = JSON.stringify(accountForm) !== JSON.stringify(defaultAccount) || passwordForm.current !== '' || passwordForm.new !== '' || passwordForm.confirm !== '';
-            const isNotifDirty = role === 'writer' ? JSON.stringify(notifWriter) !== JSON.stringify(defaultNotificationsWriter) : JSON.stringify(notifStrategist) !== JSON.stringify(defaultNotificationsStrategist);
-            const isPrefsDirty = JSON.stringify(prefsForm) !== JSON.stringify(defaultPrefs);
-            const isThresholdsDirty = JSON.stringify(thresholdsForm) !== JSON.stringify(defaultThresholds);
+            // Dirty Checks
+            const isPasswordPartiallyFilled = 
+                (passwordForm.current !== '' || passwordForm.new !== '' || passwordForm.confirm !== '') && 
+                !(passwordForm.current !== '' && passwordForm.new !== '' && passwordForm.confirm !== '');
+            
+            const isAccountDirty = JSON.stringify(accountForm) !== JSON.stringify(defaultAccount) || 
+                                  passwordForm.current !== '' || passwordForm.new !== '' || passwordForm.confirm !== '';
 
             // Left Nav Configuration
             const writerNav = [
@@ -1638,20 +1646,13 @@
                     onClick={() => setActiveSection(item.id)}
                     className={`w-full text-left flex items-center justify-between transition-all duration-150 ${
                         activeSection === item.id 
-                        ? 'bg-[#FC632B1A] border border-[#FC632B4D] text-[#FC632B] font-medium rounded-[8px] px-[10px] py-[7px]' 
+                        ? 'bg-[#242428] text-[#F2F2F3] font-medium rounded-[8px] px-[10px] py-[7px]' 
                         : 'text-[#9B9BA4] hover:text-[#F2F2F3] hover:bg-[#1A1A1E] rounded-[8px] px-[10px] py-[7px] font-normal border border-transparent'
                     }`}
                 >
                     <span className="font-sans text-[14px]">{item.label}</span>
-                    {item.badge && <span className="font-mono text-[10px] uppercase rounded-[100px] px-[7px] py-[2px] bg-[#FC632B26] text-[#FC632B] ml-[8px]">{item.badge}</span>}
+                    {item.badge && <span className={`font-mono text-[10px] uppercase rounded-[100px] px-[7px] py-[2px] ml-[8px] ${item.badge === 'FREE' ? 'bg-[#87F06426] text-[#87F064]' : 'bg-[#FC632B26] text-[#FC632B]'}`}>{item.badge}</span>}
                 </button>
-            );
-
-            const SaveDiscardRow = ({ onDiscard }) => (
-                <div className="flex justify-end gap-[12px] mt-[32px] pt-[20px] border-t border-[#2A2A2E]">
-                    <Button variant="secondary" onClick={onDiscard}>Discard changes</Button>
-                    <Button variant="primary" onClick={handleSave}>Save changes</Button>
-                </div>
             );
 
             const SectionLabel = ({ text }) => (
@@ -1670,12 +1671,22 @@
                 </div>
             );
 
-            const ReadOnlyField = ({ label, value, badge }) => (
+            const PasswordField = ({ label, value, onChange, show, onToggleShow }) => (
                 <div className="flex flex-col">
                     <label className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.1em] mb-[6px]">{label}</label>
-                    <div className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] px-[12px] font-sans text-[14px] text-[#6B6B72] flex justify-between items-center w-full min-h-[42px]">
-                        {value}
-                        {badge ? badge : <span className="font-mono text-[10px] text-[#6B6B72] uppercase">Read only</span>}
+                    <div className="relative">
+                        <input 
+                            type={show ? "text" : "password"} 
+                            value={value} 
+                            onChange={onChange} 
+                            className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] p-[10px] pl-[12px] pr-[36px] font-sans text-[14px] text-[#F2F2F3] focus:outline-none focus:border-[#FC632B]/50 transition-colors w-full"
+                        />
+                        <Icon 
+                            name={show ? "visibility_off" : "visibility"} 
+                            size={16} 
+                            onClick={onToggleShow}
+                            className="absolute right-[12px] top-1/2 -translate-y-1/2 text-[#6B6B72] hover:text-[#9B9BA4] cursor-pointer transition-colors" 
+                        />
                     </div>
                 </div>
             );
@@ -1696,7 +1707,7 @@
                     
                     <div className="flex items-start">
                         {/* LEFT COLUMN - NAV */}
-                        <div className="w-[240px] shrink-0 border-r border-[#2A2A2E] pr-[32px] flex flex-col sticky top-[104px]" style={{ height: 'calc(100vh - 184px)' }}>
+                        <div className="w-[240px] shrink-0 border-r border-[#2A2A2E] pr-[32px] flex flex-col sticky top-[104px]" style={{ height: 'calc(100vh - 144px)' }}>
                             {/* User Identity Row */}
                             <div className="flex items-center gap-[10px] mb-[28px]">
                                 <div className="w-[28px] h-[28px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center overflow-hidden shrink-0">
@@ -1720,7 +1731,7 @@
 
                             {/* Logout Action */}
                             <div className="mt-auto pt-[24px] border-t border-[#2A2A2E]">
-                                <button className="flex items-center gap-[8px] font-sans text-[14px] text-[#6B6B72] hover:text-[#FF4949] transition-colors duration-150">
+                                <button className="flex items-center gap-[8px] font-sans text-[14px] text-[#FF4949] hover:opacity-80 transition-opacity duration-150" onClick={() => setShowLogoutConfirm(true)}>
                                     <Icon name="logout" size={14} /> Logout
                                 </button>
                             </div>
@@ -1734,33 +1745,61 @@
                                 <div className="animate-in fade-in duration-300">
                                     <SectionLabel text="ACCOUNT" />
                                     
-                                    <div className="flex items-center gap-[16px] mb-[28px]">
-                                        <div className="w-[56px] h-[56px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center overflow-hidden shrink-0">
+                                    <div className="flex items-center gap-[16px] mb-[32px]">
+                                        <div className="w-[64px] h-[64px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center overflow-hidden shrink-0">
                                             <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${role === 'strategist' ? 'Felix' : 'Jamie'}`} alt="avatar" className="w-full h-full object-cover" />
                                         </div>
-                                        <button className="font-sans font-medium text-[13px] text-[#9B9BA4] hover:text-[#F2F2F3] transition-colors duration-150">Change photo</button>
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-sans font-medium text-[16px] text-[#F2F2F3]">{accountForm.name}</span>
+                                                <span className="font-mono text-[10px] text-[#9B9BA4] bg-[#2A2A2E] rounded-[6px] px-[8px] py-[2px] uppercase">
+                                                    {role === 'strategist' ? 'Strategist' : 'Writer'}
+                                                </span>
+                                            </div>
+                                            <button className="font-sans font-medium text-[13px] text-[#9B9BA4] hover:text-[#F2F2F3] transition-colors duration-150 text-left w-fit">Change avatar</button>
+                                        </div>
                                     </div>
 
-                                    <div className="flex flex-col gap-[16px]">
+                                    <div className="flex flex-col gap-[20px]">
                                         <InputField label="Full name" type="text" value={accountForm.name} onChange={e => setAccountForm({...accountForm, name: e.target.value})} />
                                         <InputField label="Email address" type="email" value={accountForm.email} onChange={e => setAccountForm({...accountForm, email: e.target.value})} />
                                         
-                                        <div className="flex flex-col">
-                                            <ReadOnlyField label="Role" value={role === 'strategist' ? 'Strategist' : 'Writer'} />
-                                            <button onClick={() => setShowPasswordFields(!showPasswordFields)} className="text-[#9B9BA4] hover:text-[#F2F2F3] font-sans font-medium text-[13px] transition-colors w-fit mt-[8px]">Change password</button>
-                                        </div>
-
-                                        {showPasswordFields && (
-                                            <div className="flex flex-col mt-[8px] gap-[16px] animate-in fade-in duration-200">
-                                                <InputField label="Current password" type="password" value={passwordForm.current} onChange={e => setPasswordForm({...passwordForm, current: e.target.value})} />
+                                        <div className="mt-[16px]">
+                                            <div className="font-sans font-medium text-[14px] text-[#F2F2F3] mb-[16px]">Change password</div>
+                                            <div className="flex flex-col gap-[16px]">
+                                                <PasswordField 
+                                                    label="Current password" 
+                                                    value={passwordForm.current} 
+                                                    onChange={e => setPasswordForm({...passwordForm, current: e.target.value})} 
+                                                    show={showCurrentPassword}
+                                                    onToggleShow={() => setShowCurrentPassword(!showCurrentPassword)}
+                                                />
                                                 <div className="grid grid-cols-2 gap-[16px]">
-                                                    <InputField label="New password" type="password" value={passwordForm.new} onChange={e => setPasswordForm({...passwordForm, new: e.target.value})} />
-                                                    <InputField label="Confirm new password" type="password" value={passwordForm.confirm} onChange={e => setPasswordForm({...passwordForm, confirm: e.target.value})} />
+                                                    <PasswordField 
+                                                        label="New password" 
+                                                        value={passwordForm.new} 
+                                                        onChange={e => setPasswordForm({...passwordForm, new: e.target.value})} 
+                                                        show={showNewPassword}
+                                                        onToggleShow={() => setShowNewPassword(!showNewPassword)}
+                                                    />
+                                                    <PasswordField 
+                                                        label="Confirm new password" 
+                                                        value={passwordForm.confirm} 
+                                                        onChange={e => setPasswordForm({...passwordForm, confirm: e.target.value})} 
+                                                        show={showConfirmPassword}
+                                                        onToggleShow={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    />
                                                 </div>
                                             </div>
-                                        )}
+                                        </div>
                                     </div>
-                                    {isAccountDirty && <SaveDiscardRow onDiscard={handleDiscardAccount} />}
+                                    
+                                    {isAccountDirty && (
+                                        <div className="flex justify-end gap-[12px] mt-[32px] pt-[20px] border-t border-[#2A2A2E]">
+                                            <Button variant="ghost" onClick={handleDiscardAccount}>Cancel</Button>
+                                            <Button variant="primary" onClick={handleSaveAccount} disabled={isPasswordPartiallyFilled}>Save</Button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
@@ -1768,7 +1807,6 @@
                             {activeSection === 'preferences' && (
                                 <div className="animate-in fade-in duration-300">
                                     <SectionLabel text="PREFERENCES" />
-                                    
                                     <div className="flex flex-col">
                                         <div className="flex justify-between items-center py-[14px] border-b border-[#2A2A2E]">
                                             <div>
@@ -1805,7 +1843,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    {isPrefsDirty && <SaveDiscardRow onDiscard={handleDiscardPrefs} />}
                                 </div>
                             )}
 
@@ -1871,11 +1908,10 @@
                                             </>
                                         )}
                                     </div>
-                                    {isNotifDirty && <SaveDiscardRow onDiscard={handleDiscardNotifications} />}
                                 </div>
                             )}
 
-                            {/* INTEGRATIONS (Strategist Only) */}
+                            {/* INTEGRATIONS */}
                             {activeSection === 'integrations' && (
                                 <div className="animate-in fade-in duration-300">
                                     <SectionLabel text="INTEGRATIONS" />
@@ -1884,18 +1920,28 @@
                                         <div className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.08em] mb-[10px]">CONNECTED</div>
                                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-[12px]">
                                             <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[16px] px-[20px] flex justify-between items-center hover:bg-[#242428] transition-colors">
-                                                <div>
-                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Google Analytics</div>
-                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">workspace@company.com</div>
+                                                <div className="flex items-center gap-[12px]">
+                                                    <div className="w-[40px] h-[40px] rounded-[10px] bg-white flex items-center justify-center shrink-0">
+                                                        <img src="https://www.gstatic.com/analytics-suite/header/suite/v2/ic_analytics.svg" alt="GA" className="w-[24px] h-[24px]" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Google Analytics</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">workspace@company.com</div>
+                                                    </div>
                                                 </div>
-                                                <span className="font-mono text-[10px] text-[#56DAB0] bg-[#56DAB026] rounded-[6px] px-[8px] py-[2px] uppercase">Active</span>
+                                                <Button variant="secondary" className="!py-[6px] !px-[12px] !text-[12px]" onClick={() => setAppToDisconnect('Google Analytics')}>Disconnect</Button>
                                             </div>
                                             <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[16px] px-[20px] flex justify-between items-center hover:bg-[#242428] transition-colors">
-                                                <div>
-                                                    <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Search Console</div>
-                                                    <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">company.com</div>
+                                                <div className="flex items-center gap-[12px]">
+                                                    <div className="w-[40px] h-[40px] rounded-[10px] bg-white flex items-center justify-center shrink-0">
+                                                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="GSC" className="w-[20px] h-[20px]" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Search Console</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">company.com</div>
+                                                    </div>
                                                 </div>
-                                                <span className="font-mono text-[10px] text-[#56DAB0] bg-[#56DAB026] rounded-[6px] px-[8px] py-[2px] uppercase">Active</span>
+                                                <Button variant="secondary" className="!py-[6px] !px-[12px] !text-[12px]" onClick={() => setAppToDisconnect('Search Console')}>Disconnect</Button>
                                             </div>
                                         </div>
                                     </div>
@@ -1904,8 +1950,20 @@
                                         <div className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.08em] mb-[10px] mt-[24px]">NOT CONNECTED</div>
                                         <div className="grid grid-cols-1 xl:grid-cols-2 gap-[12px]">
                                             <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-[16px] px-[20px] flex justify-between items-center hover:bg-[#242428] transition-colors">
-                                                <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">CRM</div>
-                                                <span className="font-mono text-[10px] text-[#6B6B72] bg-transparent border border-dashed border-[#2A2A2E] rounded-[6px] px-[8px] py-[2px] uppercase">Not connected</span>
+                                                <div className="flex items-center gap-[12px]">
+                                                    <div className="w-[40px] h-[40px] rounded-[10px] bg-[#00A1E0] flex items-center justify-center shrink-0">
+                                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-[24px] h-[24px] text-white">
+                                                            <path d="M16.5 7.5C15.8 7.5 15.2 7.7 14.7 8.1C14.3 6.9 13.2 6 11.9 6C10.7 6 9.6 6.8 9.2 7.9C8.8 7.6 8.3 7.5 7.8 7.5C6.1 7.5 4.8 8.8 4.8 10.5C4.8 12.2 6.1 13.5 7.8 13.5H16.5C18.2 13.5 19.5 12.2 19.5 10.5C19.5 8.8 18.2 7.5 16.5 7.5Z" fill="currentColor"/>
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-sans font-medium text-[14px] text-[#F2F2F3]">Salesforce</div>
+                                                        <div className="font-sans text-[12px] text-[#6B6B72] mt-[2px]">CRM Integration</div>
+                                                    </div>
+                                                </div>
+                                                <a href="#" className="font-sans font-medium text-[13px] text-[#FC632B] hover:opacity-80 transition-opacity flex items-center gap-1">
+                                                    Connect <Icon name="arrow_outward" size={16} />
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -1917,18 +1975,94 @@
                             {activeSection === 'teamspace' && (
                                 <div className="animate-in fade-in duration-300">
                                     <SectionLabel text="TEAMSPACE" />
-                                    <div className="flex flex-col gap-[16px]">
-                                        <ReadOnlyField label="Workspace name" value="Company Workspace" />
-                                        <ReadOnlyField 
-                                            label="Plan" 
-                                            value={role === 'writer' ? 'Free plan' : 'Growth plan'} 
-                                            badge={<span className="font-mono text-[10px] text-[#56DAB0] bg-[#56DAB026] rounded-[6px] px-[8px] py-[2px] uppercase">Active</span>}
-                                        />
-                                        {role === 'strategist' && (
-                                            <ReadOnlyField label="Admin contact" value="admin@company.com" />
-                                        )}
+                                    
+                                    <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[16px] p-[24px]">
+                                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-[24px]">
+                                            <div className="flex flex-col gap-[12px]">
+                                                <div className="flex items-center gap-[12px]">
+                                                    <h2 className="font-heading text-[24px] text-[#F2F2F3] font-medium leading-none">Content Mavericks</h2>
+                                                </div>
+                                                <p className="font-sans text-[14px] text-[#9B9BA4] leading-[1.6] max-w-[500px]">
+                                                    The primary workspace for the marketing content team. Connect your integrations and invite team members to collaborate on briefs and signals.
+                                                </p>
+                                            </div>
+                                            <button className="flex items-center justify-center gap-2 font-sans font-medium text-[13px] text-[#E1454D] border border-[#E1454D]/50 hover:bg-[#E1454D]/10 rounded-[8px] px-[16px] py-[8px] transition-colors shrink-0">
+                                                Leave teamspace
+                                            </button>
+                                        </div>
+
+                                        <div className="w-full h-px bg-[#2A2A2E] my-[24px]"></div>
+
+                                        <div className="flex flex-col gap-[6px]">
+                                            <div className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.1em]">Invite link</div>
+                                            <div className="flex items-center gap-[8px]">
+                                                <div className="bg-[#242428] border border-[#2A2A2E] rounded-[8px] py-[8px] px-[12px] font-sans text-[13px] text-[#9B9BA4] flex-1 max-w-[400px] truncate">
+                                                    https://scribe.ai/invite/t_982hjsdf87
+                                                </div>
+                                                <button className="w-[36px] h-[36px] rounded-[8px] bg-[#242428] border border-[#2A2A2E] flex items-center justify-center text-[#9B9BA4] hover:text-[#F2F2F3] hover:border-[#FC632B]/50 transition-colors">
+                                                    <Icon name="content_copy" size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="font-sans text-[13px] text-[#6B6B72] mt-[16px]">To change workspace settings or manage billing, contact your admin.</p>
+
+                                    {/* Members Table */}
+                                    <div className="mt-[40px]">
+                                        <SectionLabel text="MEMBERS" />
+                                        <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] overflow-x-auto">
+                                            <table className="w-full min-w-[600px] text-left border-collapse">
+                                                <thead>
+                                                    <tr className="border-b border-[#2A2A2E]">
+                                                        <th className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.08em] font-normal py-[14px] px-[20px]">Member</th>
+                                                        <th className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.08em] font-normal py-[14px] px-[20px]">Role</th>
+                                                        <th className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.08em] font-normal py-[14px] px-[20px]">Email</th>
+                                                        <th className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.08em] font-normal py-[14px] px-[20px]">Joined</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr className="border-b border-[#2A2A2E] hover:bg-[#242428]/50 transition-colors">
+                                                        <td className="py-[14px] px-[20px]">
+                                                            <div className="flex items-center gap-[12px]">
+                                                                <div className="w-[28px] h-[28px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center overflow-hidden shrink-0">
+                                                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="avatar" />
+                                                                </div>
+                                                                <span className="font-sans font-medium text-[13px] text-[#F2F2F3]">Sarah K.</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-[14px] px-[20px]"><span className="font-mono text-[10px] text-[#9B9BA4] bg-[#2A2A2E] rounded-[6px] px-[8px] py-[2px] uppercase">Strategist</span></td>
+                                                        <td className="py-[14px] px-[20px]"><span className="font-sans text-[13px] text-[#9B9BA4]">sarah@company.com</span></td>
+                                                        <td className="py-[14px] px-[20px]"><span className="font-sans text-[13px] text-[#9B9BA4]">Jun 4, 2023</span></td>
+                                                    </tr>
+                                                    <tr className="border-b border-[#2A2A2E] hover:bg-[#242428]/50 transition-colors">
+                                                        <td className="py-[14px] px-[20px]">
+                                                            <div className="flex items-center gap-[12px]">
+                                                                <div className="w-[28px] h-[28px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center overflow-hidden shrink-0">
+                                                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jamie" alt="avatar" />
+                                                                </div>
+                                                                <span className="font-sans font-medium text-[13px] text-[#F2F2F3]">Jamie D.</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-[14px] px-[20px]"><span className="font-mono text-[10px] text-[#9B9BA4] bg-[#2A2A2E] rounded-[6px] px-[8px] py-[2px] uppercase">Writer</span></td>
+                                                        <td className="py-[14px] px-[20px]"><span className="font-sans text-[13px] text-[#9B9BA4]">jamie@company.com</span></td>
+                                                        <td className="py-[14px] px-[20px]"><span className="font-sans text-[13px] text-[#9B9BA4]">Oct 12, 2023</span></td>
+                                                    </tr>
+                                                    <tr className="hover:bg-[#242428]/50 transition-colors">
+                                                        <td className="py-[14px] px-[20px]">
+                                                            <div className="flex items-center gap-[12px]">
+                                                                <div className="w-[28px] h-[28px] rounded-full bg-[#242428] border border-[#2A2A2E] flex items-center justify-center overflow-hidden shrink-0">
+                                                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Alex" alt="avatar" />
+                                                                </div>
+                                                                <span className="font-sans font-medium text-[13px] text-[#F2F2F3]">Alex T.</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="py-[14px] px-[20px]"><span className="font-mono text-[10px] text-[#9B9BA4] bg-[#2A2A2E] rounded-[6px] px-[8px] py-[2px] uppercase">Writer</span></td>
+                                                        <td className="py-[14px] px-[20px]"><span className="font-sans text-[13px] text-[#9B9BA4]">alex.t@company.com</span></td>
+                                                        <td className="py-[14px] px-[20px]"><span className="font-sans text-[13px] text-[#9B9BA4]">Jan 21, 2024</span></td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
@@ -1937,27 +2071,36 @@
                                 <div className="animate-in fade-in duration-300">
                                     <SectionLabel text="PLANS" />
                                     
-                                    <div className="bg-[#FC632B1A] border border-[#FC632B4D] rounded-[12px] p-[20px] px-[24px] mb-[24px]">
-                                        <div className="font-mono text-[10px] text-[#FC632B] bg-[#FC632B26] uppercase px-[8px] py-[2px] rounded-[100px] w-fit mb-[12px]">CURRENT PLAN</div>
-                                        <div className="font-heading text-[20px] text-[#F2F2F3] font-medium">{role === 'writer' ? 'Free Plan' : 'Growth Plan'}</div>
-                                        <div className="font-sans text-[13px] text-[#9B9BA4] mt-[4px]">{role === 'writer' ? 'The perfect plan for early-stage content teams.' : 'Full access to signals, briefs, and team management.'}</div>
-                                        <div className="font-sans text-[13px] text-[#6B6B72] mt-[8px]">{role === 'writer' ? '$0 per member / monthly' : '$29 per member / monthly'}</div>
+                                    <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[16px] p-[24px] mb-[32px]">
+                                        <div className="w-[40px] h-[40px] rounded-[10px] bg-[#242428] border border-[#2A2A2E] flex items-center justify-center mb-[16px]">
+                                            <Icon name="workspace_premium" size={20} className={role === 'writer' ? 'text-[#87F064]' : 'text-[#FC632B]'} />
+                                        </div>
+                                        <div className="flex justify-between items-start gap-[24px]">
+                                            <div>
+                                                <div className="font-heading text-[20px] text-[#F2F2F3] font-medium leading-none">{role === 'writer' ? 'Free Plan' : 'Growth Plan'}</div>
+                                                <div className="font-sans text-[13px] text-[#9B9BA4] mt-[8px]">{role === 'writer' ? 'The perfect plan for early-stage content teams.' : 'Full access to signals, briefs, and team management.'}</div>
+                                            </div>
+                                            <div className="text-right shrink-0">
+                                                <div className="font-heading text-[24px] text-[#F2F2F3] leading-none mb-[4px]">{role === 'writer' ? '$0' : '$29'}</div>
+                                                <div className="font-sans text-[12px] text-[#6B6B72]">{role === 'writer' ? 'free forever' : 'per member / monthly'}</div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div>
                                         <div className="font-mono text-[10px] text-[#6B6B72] uppercase tracking-[0.08em] mb-[12px]">ROLES AND ACCESS</div>
                                         <div className="flex flex-col">
-                                            <div className="flex justify-between items-center py-[12px] border-b border-[#2A2A2E]">
+                                            <div className="grid grid-cols-[100px_1fr] items-center py-[12px] border-b border-[#2A2A2E] gap-[24px]">
                                                 <span className="font-sans font-medium text-[14px] text-[#F2F2F3]">Writers</span>
-                                                <span className="font-sans text-[13px] text-[#9B9BA4]">Can create and publish content</span>
+                                                <span className="font-sans text-[13px] text-[#9B9BA4] text-left">Can create and publish content</span>
                                             </div>
-                                            <div className="flex justify-between items-center py-[12px] border-b border-[#2A2A2E]">
+                                            <div className="grid grid-cols-[100px_1fr] items-center py-[12px] border-b border-[#2A2A2E] gap-[24px]">
                                                 <span className="font-sans font-medium text-[14px] text-[#F2F2F3]">Strategists</span>
-                                                <span className="font-sans text-[13px] text-[#9B9BA4]">Can manage signals, briefs, and reports</span>
+                                                <span className="font-sans text-[13px] text-[#9B9BA4] text-left">Can manage signals, briefs, and reports</span>
                                             </div>
-                                            <div className="flex justify-between items-center py-[12px]">
+                                            <div className="grid grid-cols-[100px_1fr] items-center py-[12px] gap-[24px]">
                                                 <span className="font-sans font-medium text-[14px] text-[#F2F2F3]">Admins</span>
-                                                <span className="font-sans text-[13px] text-[#9B9BA4]">Can manage members, billing, and workspace settings</span>
+                                                <span className="font-sans text-[13px] text-[#9B9BA4] text-left">Can manage members, billing, and workspace settings</span>
                                             </div>
                                         </div>
                                     </div>
@@ -2045,12 +2188,46 @@
                                             </div>
                                         </div>
                                     </div>
-                                    {isThresholdsDirty && <SaveDiscardRow onDiscard={handleDiscardThresholds} />}
+                                    <div className="flex justify-end gap-[12px] mt-[32px] pt-[20px] border-t border-[#2A2A2E]">
+                                        <Button variant="ghost">Cancel</Button>
+                                        <Button variant="primary" onClick={handleSaveAccount}>Save changes</Button>
+                                    </div>
                                 </div>
                             )}
-
                         </div>
                     </div>
+
+                    {/* Disconnect Overlay Dialog */}
+                    {appToDisconnect && ReactDOM.createPortal(
+                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setAppToDisconnect(null)}></div>
+                            <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[16px] w-full max-w-[400px] z-10 animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col shadow-2xl p-[24px]">
+                                <h2 className="font-heading text-[20px] text-[#F2F2F3] mb-[8px]">Are you sure?</h2>
+                                <p className="font-sans text-[14px] text-[#9B9BA4] mb-[24px]">Disconnect {appToDisconnect} from Scribe AI.</p>
+                                <div className="flex justify-end gap-[12px]">
+                                    <Button variant="ghost" onClick={() => setAppToDisconnect(null)}>Cancel</Button>
+                                    <Button onClick={() => setAppToDisconnect(null)}>Disconnect</Button>
+                                </div>
+                            </div>
+                        </div>,
+                        document.body
+                    )}
+
+                    {/* Logout Overlay Dialog */}
+                    {showLogoutConfirm && ReactDOM.createPortal(
+                        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setShowLogoutConfirm(false)}></div>
+                            <div className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[16px] w-full max-w-[400px] z-10 animate-in fade-in zoom-in-95 duration-200 overflow-hidden flex flex-col shadow-2xl p-[24px]">
+                                <h2 className="font-heading text-[20px] text-[#F2F2F3] mb-[8px]">Are you leaving?</h2>
+                                <p className="font-sans text-[14px] text-[#9B9BA4] mb-[24px]">You will be logout of your workspace after confirm.</p>
+                                <div className="flex justify-end gap-[12px]">
+                                    <Button variant="ghost" onClick={() => setShowLogoutConfirm(false)}>Cancel</Button>
+                                    <Button onClick={onLogout} className="!bg-[#FF4949]">Logout</Button>
+                                </div>
+                            </div>
+                        </div>,
+                        document.body
+                    )}
 
                     {/* Toast Notification */}
                     {showToast && ReactDOM.createPortal(
@@ -2076,6 +2253,14 @@
             const [showSignalToast, setShowSignalToast] = useState(false);
             const [briefNote, setBriefNote] = useState("Update the existing guide to include a dedicated section on AI-driven sequence personalization. Focus on reclaiming the featured snippet from EmailFlow.io by addressing the 'AI Automation' gap identified in our analysis.");
             const relatedScrollRef = useRef(null);
+
+            const [assignee, setAssignee] = useState({ name: 'Jamie D.', seed: 'Jamie' });
+            const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
+            const WRITERS = [
+                { name: 'Jamie D.', seed: 'Jamie' },
+                { name: 'Alex T.', seed: 'Alex' },
+                { name: 'Sarah K.', seed: 'Felix' }
+            ];
 
             useEffect(() => {
                 let timer;
@@ -2126,7 +2311,7 @@
                         {/* VIEW ROUTING */}
                         {route === 'signals' && <SignalsHome onPostDetail={() => handleRouteChange('detail')} onReports={() => handleRouteChange('reports')} />}
                         {route === 'produce' && <ProduceHome onOpenBrief={(source) => handleRouteChange('brief', { source })} />}
-                        {route === 'settings' && <Settings role={role} />}
+                        {route === 'settings' && <Settings role={role} onLogout={() => handleRouteChange('login')} />}
                         
                         {/* Detail Screens */}
                         {route === 'reports' && (
@@ -2173,13 +2358,13 @@
                                                     <ChartTooltip content={<ChartTooltipContent />} cursor={{ stroke: '#2A2A2E', strokeWidth: 1, strokeDasharray: '4 4' }} />
                                                     <ReferenceLine 
                                                         x="Oct2" 
-                                                        stroke="#FF4949" 
+                                                        stroke="#6B6B72" 
                                                         strokeDasharray="3 3" 
                                                         strokeWidth={1.5}
                                                         label={{
                                                             value: "Competitor post published Oct 18",
                                                             position: "top",
-                                                            fill: "#FF4949",
+                                                            fill: "#F2F2F3",
                                                             fontSize: 11,
                                                             fontFamily: "DM Sans",
                                                             dy: -8,
@@ -2314,24 +2499,71 @@
                                         </div>
                                     </div>
 
-                                    {/* Note for Writer Input */}
-                                    <div className="flex flex-col gap-2 mt-2 animate-in fade-in duration-300">
-                                        <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider flex items-center gap-1.5">
-                                            <Icon name="edit_note" size={16} /> Note for writer (optional)
-                                        </label>
-                                        <textarea 
-                                            className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-4 text-[#F2F2F3] text-[14px] focus:outline-none focus:border-[#FC632B]/50 transition-colors w-full resize-none min-h-[100px] font-sans"
-                                            placeholder="Add specific instructions or context for the writer..."
-                                            value={briefNote}
-                                            onChange={(e) => setBriefNote(e.target.value)}
-                                            disabled={!selectedAction || isBriefSent}
-                                        />
+                                    <div className="flex flex-col gap-4 mt-2 animate-in fade-in duration-300">
+                                        {/* Assignee Selection */}
+                                        <div className="flex flex-col gap-2 relative w-full">
+                                            <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider flex items-center gap-1.5">
+                                                <Icon name="person" size={16} /> Assignee
+                                            </label>
+                                            <div className="relative w-full">
+                                                <button 
+                                                    className={`w-full bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-3 flex items-center justify-between transition-colors ${!selectedAction || isBriefSent ? 'opacity-50 cursor-not-allowed' : 'hover:border-[#FC632B]/50'}`}
+                                                    onClick={() => !isBriefSent && selectedAction && setIsAssigneeDropdownOpen(!isAssigneeDropdownOpen)}
+                                                    disabled={!selectedAction || isBriefSent}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-7 h-7 rounded-full overflow-hidden bg-[#242428] border border-[#2A2A2E] shrink-0">
+                                                            <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${assignee.seed}`} alt="avatar" className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <span className="text-[14px] text-[#F2F2F3] font-sans font-medium">{assignee.name}</span>
+                                                    </div>
+                                                    <Icon name="expand_more" size={20} className="text-[#6B6B72]" />
+                                                </button>
+
+                                                {isAssigneeDropdownOpen && !isBriefSent && (
+                                                    <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-[#242428] border border-[#2A2A2E] rounded-[12px] shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 py-1">
+                                                        {WRITERS.map(writer => (
+                                                            <button
+                                                                key={writer.name}
+                                                                className="w-full flex items-center gap-3 p-3 hover:bg-[#1A1A1E] transition-colors text-left"
+                                                                onClick={() => {
+                                                                    setAssignee(writer);
+                                                                    setIsAssigneeDropdownOpen(false);
+                                                                }}
+                                                            >
+                                                                <div className="w-7 h-7 rounded-full overflow-hidden bg-[#242428] border border-[#2A2A2E] shrink-0">
+                                                                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${writer.seed}`} alt="avatar" className="w-full h-full object-cover" />
+                                                                </div>
+                                                                <span className="text-[14px] text-[#F2F2F3] font-sans font-medium flex-1">{writer.name}</span>
+                                                                {assignee.name === writer.name && (
+                                                                    <Icon name="check" size={18} className="text-[#FC632B] shrink-0" />
+                                                                )}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Note for Writer Input */}
+                                        <div className="flex flex-col gap-2">
+                                            <label className="text-[12px] font-mono text-[#6B6B72] uppercase tracking-wider flex items-center gap-1.5">
+                                                <Icon name="edit_note" size={16} /> Note for writer (optional)
+                                            </label>
+                                            <textarea 
+                                                className="bg-[#1A1A1E] border border-[#2A2A2E] rounded-[12px] p-4 text-[#F2F2F3] text-[14px] focus:outline-none focus:border-[#FC632B]/50 transition-colors w-full resize-none min-h-[100px] font-sans"
+                                                placeholder="Add specific instructions or context for the writer..."
+                                                value={briefNote}
+                                                onChange={(e) => setBriefNote(e.target.value)}
+                                                disabled={!selectedAction || isBriefSent}
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="mt-4">
                                         {isBriefSent ? (
                                             <div className="text-[14px] text-[#56DAB0] font-sans font-medium transition-all duration-250 ease-in-out flex items-center justify-end">
-                                                <span>Brief sent to Jamie D. — this post is now marked as In progress.</span>
+                                                <span>Brief sent to {assignee.name} — this post is now marked as In progress.</span>
                                             </div>
                                         ) : (
                                             <div className="flex items-center justify-end">
@@ -2350,7 +2582,7 @@
                                                         onClick={() => setIsBriefSent(true)}
                                                         className={`transition-all duration-200 ${!selectedAction ? 'opacity-40' : 'opacity-100'}`}
                                                     >
-                                                        Send brief to Jamie D. &rarr;
+                                                        Assign brief
                                                     </Button>
                                                 </div>
                                             </div>
