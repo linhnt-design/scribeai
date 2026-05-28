@@ -497,9 +497,10 @@
                         setIsExiting(true);
                         // Trigger actual route change after exit animation completes
                         setTimeout(() => {
-                            if (email.toLowerCase().includes('strategist')) {
+                            const emailLower = email.toLowerCase().trim();
+                            if (emailLower === 'strategist@gmail.com' || emailLower.includes('strategist')) {
                                 onLogin('signals');
-                            } else if (email.toLowerCase().includes('writer')) {
+                            } else if (emailLower === 'writer@gmail.com' || emailLower.includes('writer')) {
                                 onLogin('produce');
                             } else {
                                 onLogin('produce'); // Default fallback
@@ -647,7 +648,7 @@
             <div className="min-h-screen flex flex-col font-sans relative" style={{ backgroundColor: THEME.bg, color: THEME.text.primary }}>
                 {/* Sticky Navigation - Elevated Z-Index to prevent Hero overlap */}
                 <nav className="h-16 border-b flex items-center justify-between px-4 md:px-8 sticky top-0 z-[100] bg-[#0E0E10]/95 backdrop-blur-md" style={{ borderColor: THEME.border }}>
-                    <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setRoute('produce')}>
+                    <div className="flex items-center gap-2 cursor-pointer group" onClick={() => setRoute(role === 'strategist' ? 'signals' : 'produce')}>
                         <div className="w-6 h-6 bg-[#FC632B] rounded-md flex items-center justify-center group-hover:opacity-90 transition-opacity">
                             <div className="w-3 h-3 bg-white rotate-45 rounded-sm" />
                         </div>
