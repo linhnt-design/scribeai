@@ -1,0 +1,7 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Orange Background -->
+  <rect width="240" height="240" rx="60" fill="#FC632B"/>
+  
+  <!-- White Rotated Diamond -->
+  <rect x="60" y="60" width="120" height="120" rx="20" fill="#FFFFFF" transform="rotate(45 120 120)"/>
+</svg>
