@@ -284,6 +284,12 @@
             { id: 3, type: 'publish', title: 'Published', body: '"SaaS onboarding email sequences" is now live and being tracked.', time: 'Nov 10, 2024', icon: <Icon name="check" size={16} /> }
         ];
 
+        const WRITERS = [
+            { name: 'Jamie D.', seed: 'Jamie' },
+            { name: 'Alex T.', seed: 'Alex' },
+            { name: 'Sarah K.', seed: 'Felix' }
+        ];
+
         const MOCK_ARTICLE_CONTENT = {
             'Automated Follow-ups': [
                 "Automated follow ups are the engine of B2B sales. Set them up once and let them run. Focus on timing and relevance.",
@@ -672,6 +678,7 @@
                 
                 {/* Content Area */}
                 <main className="flex-1 w-full max-w-7xl mx-auto relative z-0 pb-10">
+                    {/* Render active content view */}
                     {children}
                 </main>
             </div>
@@ -2218,6 +2225,10 @@
             const [briefNote, setBriefNote] = useState("Update the existing guide to include a dedicated section on AI-driven sequence personalization. Focus on reclaiming the featured snippet from EmailFlow.io by addressing the 'AI Automation' gap identified in our analysis.");
             const relatedScrollRef = useRef(null);
 
+            // Added Missing States for Assignee Dropdown
+            const [assignee, setAssignee] = useState(WRITERS[0]);
+            const [isAssigneeDropdownOpen, setIsAssigneeDropdownOpen] = useState(false);
+
             useEffect(() => {
                 let timer;
                 if (showSignalToast) {
@@ -2253,6 +2264,7 @@
                 setNestedArticle(null);
                 setSelectedAction(newRoute === 'detail' ? 'refresh' : null);
                 setIsBriefSent(false);
+                setIsAssigneeDropdownOpen(false); // Make sure dropdown closes on route change
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             };
 
@@ -2275,7 +2287,7 @@
                         role={role}
                     >
                         {/* VIEW ROUTING */}
-                        {route === 'signals' && <SignalsHome onPostDetail={() => handleRouteChange('detail')} onReports={() => handleRouteChange('reports')} />}
+                        {route === 'signals' && <SignalsHome onPostDetail={(id) => handleRouteChange('detail', { id })} onReports={() => handleRouteChange('reports')} />}
                         {route === 'produce' && <ProduceHome onOpenBrief={(source) => handleRouteChange('brief', { source })} />}
                         {route === 'settings' && <Settings role={role} onLogout={() => handleRouteChange('login')} />}
                         
